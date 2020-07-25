@@ -1,6 +1,5 @@
 package edu.ohiou.mfgresearch;
 
-import java.io.InputStream;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,7 +19,7 @@ public class JobShopTest
 		LinkedList<PerformanceMeasures> measure1=new LinkedList<PerformanceMeasures>();
 		measure1.add(PerformanceMeasures.NUM_TARDY_JOB);
 		measure1.add(PerformanceMeasures.TOTAL_TARDINESS);
-		DataGenerator ob=new DataGenerator("C:\\Users\\sarkara1\\Dropbox\\GA_Code\\Test_Cases\\JobShopTest3_3_1_10.csv",1,10,3,3);
+		DataGenerator ob=new DataGenerator("/META-INF/jobshop/JobShopTest3_3_1_10.csv",1,10,3,3);
 		//ob.generateJobShop();
 		JobShopProblem prob=(JobShopProblem)ob.createJobShopProb(measure1);
 //		List<JobT> ii=prob.getJobs();

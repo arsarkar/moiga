@@ -44,9 +44,9 @@ public class DataGeneratorTest
 	public void test() throws IOException
 	{
 		for(int i=20;i<=140;i+=40)
-		{DataGenerator ob=new DataGenerator("D:\\GA and BioInspired Algo\\Test_Cases\\Test"+i+"_"+"1_"+((int)(i*0.5))+".csv", 1,(int)(i*0.5), i);
+		{DataGenerator ob=new DataGenerator("/META-INF/single/Test"+i+"_"+"1_"+((int)(i*0.5))+".csv", 1,(int)(i*0.5), i);
 		ob.generate();}
-		DataGenerator ob=new DataGenerator("D:\\GA and BioInspired Algo\\Test_Cases\\Test"+40+"_"+"1_"+"20.csv", 1,20, 40);
+		DataGenerator ob=new DataGenerator("/META-INF/single/Test"+40+"_"+"1_"+"20.csv", 1,20, 40);
 		ob.generate();
 	}
 	@Test
@@ -60,31 +60,31 @@ public class DataGeneratorTest
 	public void test1() throws Exception
 	{
 		Problem prob;
-		DataGenerator ob=new DataGenerator("D:\\GA and BioInspired Algo\\Test_Cases\\Test20_1_10.csv", 0, 0, 0);
+		DataGenerator ob=new DataGenerator("/META-INF/single/Test20_1_10.csv", 0, 0, 0);
 //		prob=ob.createProb(measure1);
 //		prob=ob.createProb(measure2);
 //		prob=ob.createProb(measure3);
 //		prob=ob.createProb(measure4);
 		
-		ob=new DataGenerator("D:\\GA and BioInspired Algo\\Test_Cases\\Test40_1_20.csv", 0, 0, 0);
+		ob=new DataGenerator("/META-INF/single/Test40_1_20.csv", 0, 0, 0);
 		prob=ob.createProb(measure1);
 //		prob=ob.createProb(measure2);
 //		prob=ob.createProb(measure3);
 //		prob=ob.createProb(measure4);
 //		
-		ob=new DataGenerator("D:\\GA and BioInspired Algo\\Test_Cases\\Test60_1_30.csv", 0, 0, 0);
+		ob=new DataGenerator("/META-INF/single/Test60_1_30.csv", 0, 0, 0);
 //		prob=ob.createProb(measure1);
 //		prob=ob.createProb(measure2);
 //		prob=ob.createProb(measure3);
 //		prob=ob.createProb(measure4);
 //		
-		ob=new DataGenerator("D:\\GA and BioInspired Algo\\Test_Cases\\Test100_1_50.csv", 0, 0, 0);
+		ob=new DataGenerator("/META-INF/single/Test100_1_50.csv", 0, 0, 0);
 //		prob=ob.createProb(measure1);
 //		prob=ob.createProb(measure2);
 //		prob=ob.createProb(measure3);
 //		prob=ob.createProb(measure4);
 //		
-		ob=new DataGenerator("D:\\GA and BioInspired Algo\\Test_Cases\\Test140_1_70.csv", 0, 0, 0);
+		ob=new DataGenerator("/META-INF/single/Test140_1_70.csv", 0, 0, 0);
 //		prob=ob.createProb(measure1);
 //		prob=ob.createProb(measure2);
 //		prob=ob.createProb(measure3);
@@ -135,7 +135,7 @@ public class DataGeneratorTest
 		bounds.add(TT);
 		System.out.println(Arrays.toString(bounds.toArray()));
 		TestAutomator test=new TestAutomator(bounds, alpha, genCount, seedP, prob, ops, 
-				"D:\\GA and BioInspired Algo\\Test_Cases\\Result_40_measure1.csv");
+				"/META-INF/single/Result_40_measure1.csv");
 		test.test();
 	}
 }
