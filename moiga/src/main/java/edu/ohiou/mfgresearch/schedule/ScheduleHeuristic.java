@@ -32,6 +32,7 @@ public enum ScheduleHeuristic
             return jobs.stream().mapToDouble(i->i.completionTime).max().getAsDouble();
     	}
     },
+	
 	SPT(2)
     {
     	public double evaluate(List<JobT> jobs,int jcnt,int mcnt)

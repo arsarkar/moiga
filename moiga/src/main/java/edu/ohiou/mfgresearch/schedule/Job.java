@@ -73,6 +73,11 @@ public class Job implements Variable
 		 this.readyTime=readyTime;
 		 this.machineID=mID;
 	 }
+
+	 public long getJobID(){
+		 return jobID;
+	 }
+
 	public double getProcessingTime() {
 		return processingTime;
 	}

@@ -9,7 +9,7 @@ public class JobT extends Job
 
 	private static final long serialVersionUID = -4412957802165045238L;
 	public final long jobID;
-	 int[][] task;//list containing tuples of (machine ID,pT)	 
+	int[][] task;//list containing tuples of (machine ID,pT)	 
 //	 private double processingTime,dueDate;
 //	 private double completionTime;
 //	 private double readyTime;
