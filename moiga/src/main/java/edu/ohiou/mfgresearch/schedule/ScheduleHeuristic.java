@@ -5,11 +5,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.moeaframework.core.Solution;
+
 public enum ScheduleHeuristic
 {
     FCFS(1)
     {
-    	public double evaluate(List<JobT> jobs,int jcnt,int mcnt)
+    	public Solution evaluate(List<JobT> jobs,int jcnt,int mcnt)
     	{
     		
     		double mtime[]=new double[mcnt];
@@ -29,13 +31,19 @@ public enum ScheduleHeuristic
             	jid.completionTime=Arrays.stream(mtime).max().getAsDouble();
             }
 //            jobs.forEach(i->System.out.println(i));
-            return jobs.stream().mapToDouble(i->i.completionTime).max().getAsDouble();
+            Solution temp=new Solution(jobs.size(),5);
+            for(int i=0;i<jobs.size();i++)
+            {
+            	temp.setVariable(i,jobs.get(i).copy());
+            	jobs.get(i).completionTime=0.0;
+            }
+            return temp;
     	}
     },
 	
 	SPT(2)
     {
-    	public double evaluate(List<JobT> jobs,int jcnt,int mcnt)
+    	public Solution evaluate(List<JobT> jobs,int jcnt,int mcnt)
     	{
             double mtime[]=new double[mcnt];
             Collections.sort(jobs,new Comparator<JobT>(){
@@ -67,19 +75,26 @@ public enum ScheduleHeuristic
         		System.out.println();
             	jid.completionTime=Arrays.stream(mtime).max().getAsDouble();
             }
-            jobs.forEach(i->System.out.println(i));
-            return jobs.stream().mapToDouble(i->i.completionTime).max().getAsDouble();
+//            jobs.forEach(i->System.out.println(i));
+            Solution temp=new Solution(jobs.size(),5);
+            for(int i=0;i<jobs.size();i++)
+            {
+            	temp.setVariable(i,jobs.get(i).copy());
+            	jobs.get(i).completionTime=0.0;
+            }
+            return temp;
     	}
     },
     LWKR(3)
     {
-    	public double evaluate(List<JobT> jobs,int jcnt,int mcnt)
+    	public Solution evaluate(List<JobT> jobs,int jcnt,int mcnt)
     	{
             int tcnt[]=new int[jcnt];
             double mtime[]=new double[mcnt];
             double lmt[]=new double[jcnt];
             int ttemp[]=null;
             boolean flag=true;
+            System.out.println(jobs+" "+jcnt);
             while(flag)
             {
             	flag=false;
@@ -117,12 +132,18 @@ public enum ScheduleHeuristic
                 System.out.println();
             }
 //            jobs.forEach(i->System.out.println(i));
-            return jobs.stream().mapToDouble(i->i.completionTime).max().getAsDouble();
+            Solution temp=new Solution(jobs.size(),5);
+            for(int i=0;i<jobs.size();i++)
+            {
+            	temp.setVariable(i,jobs.get(i).copy());
+            	jobs.get(i).completionTime=0.0;
+            }
+            return temp;
     	}
     },
     DDate(4)
     {
-    	public double evaluate(List<JobT> jobs,int jcnt,int mcnt)
+    	public Solution evaluate(List<JobT> jobs,int jcnt,int mcnt)
     	{
 //            int tcnt[]=new int[jcnt];
             double mtime[]=new double[mcnt];
@@ -154,28 +175,13 @@ public enum ScheduleHeuristic
             		System.out.print(mtime[k]+" ");
             	System.out.println();
             }
-            return jobs.stream().mapToDouble(i->i.completionTime).max().getAsDouble();
-    	}
-    },
-    nT(5)
-    {
-    	public double evaluate(List<JobT> jobs,int m,int n)
-    	{
-    		int nT=0;
-    		for(JobT i:jobs)
-    			if(i.getTardyTime()>0)
-    				nT++;
-    		return nT;
-    	}
-    },
-    TT(6)
-    {
-    	public double evaluate(List<JobT> jobs,int m,int n)
-    	{
-    		double TT=0;
-    		for(JobT i:jobs)
-    			TT+=i.getTardyTime();
-    		return TT;
+            Solution temp=new Solution(jobs.size(),5);
+            for(int i=0;i<jobs.size();i++)
+            {
+            	temp.setVariable(i,jobs.get(i).copy());
+            	jobs.get(i).completionTime=0.0;
+            }
+            return temp;
     	}
     };
     public int abv;
@@ -183,8 +189,8 @@ public enum ScheduleHeuristic
     {
            this.abv = abv;
     }
-    public double evaluate(List<JobT> jobs,int m,int n)
+    public Solution evaluate(List<JobT> jobs,int m,int n)
 	{
-    	return 00;
+    	return null;
 	}
 }

@@ -1,7 +1,6 @@
 package edu.ohiou.mfgresearch;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -290,7 +289,7 @@ public class DataGenerator
 	{
 		Scanner sc=new Scanner(new File(path));
 		sc.nextLine();
-		String ss[]=path.substring(path.lastIndexOf('\\')+1).replace("JobShopTest","").replace(".csv","").split("_");
+		String ss[]=path.substring(path.lastIndexOf('/')+1).replace("JobShopTest","").replace(".csv","").split("_");
 		int cnt=Integer.parseInt(ss[0]);
 		List<JobT> jobs = new LinkedList<JobT>();
 		while(cnt-->0)

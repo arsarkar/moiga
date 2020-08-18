@@ -9,15 +9,13 @@ import org.junit.Test;
 import org.moeaframework.core.Solution;
 
 import edu.ohiou.mfgresearch.lambda.Omni;
-import edu.ohiou.mfgresearch.lambda.Uni;
-import edu.ohiou.mfgresearch.lambda.functions.Cons;
 import edu.ohiou.mfgresearch.schedule.JobShopProblem;
 import edu.ohiou.mfgresearch.schedule.JobT;
 import edu.ohiou.mfgresearch.schedule.PerformanceMeasures;
 import edu.ohiou.mfgresearch.schedule.ScheduleHeuristic;
 
 public class JobShopTest {
-	@Test
+//	@Test
 	public void test() throws Exception {
 		LinkedList<PerformanceMeasures> measure1 = new LinkedList<PerformanceMeasures>();
 		measure1.add(PerformanceMeasures.NUM_TARDY_JOB);
@@ -59,27 +57,29 @@ public class JobShopTest {
 	}
 
 	@Test
-	public void testHeuristic() throws Exception {
+	public void testHeuristic() throws Exception
+	{
 		LinkedList<PerformanceMeasures> measure1 = new LinkedList<PerformanceMeasures>();
 		measure1.add(PerformanceMeasures.NUM_TARDY_JOB);
 		measure1.add(PerformanceMeasures.TOTAL_TARDINESS);
 		URL file1 = getClass().getResource("/META-INF/jobshop/JobShopTest3_3_1_10.csv");
+		System.out.println(file1.getFile());
 		DataGenerator ob = new DataGenerator(file1.getFile(), 1, 10, 3, 3);
 		// ob.generateJobShop(0.4,0.6);
 		JobShopProblem prob;
-		// prob=(JobShopProblem)ob.createJobShopProb(measure1);
+		 prob=(JobShopProblem)ob.createJobShopProb(measure1);
 		URL file2 = getClass().getResource("/META-INF/jobshop/ta_15_15.txt");
-		prob = DataGenerator.amendTaillardToJobShop(file2.getFile(), measure1, 0.4, 0.6);
+//		prob = DataGenerator.amendTaillardToJobShop(file2.getFile(), measure1, 0.4, 0.6);
 		List<JobT> ii = prob.getJobs();
 		// ii.forEach(i->System.out.println("->"+i));
-		System.out.println(ScheduleHeuristic.DDate.evaluate(ii, 15, 15));
+		Solution sol=ScheduleHeuristic.FCFS.evaluate(ii, 3,3);
+		for(int i=0;i<sol.getNumberOfVariables();i++)
+			System.out.println(sol.getVariable(i));
 		// Solution sol1=prob.newSolution();
-		// ii.forEach(i->System.out.println(i));
-		System.out.println(ScheduleHeuristic.TT.evaluate(ii, 10, 10));
-		ii.forEach(i -> System.out.println(i));
+		 ii.forEach(i->System.out.println(i));
 	}
 
-	@Test
+//	@Test
 	public void testNumTardy() {
 		try {
 			JobShopProblem prob = 
