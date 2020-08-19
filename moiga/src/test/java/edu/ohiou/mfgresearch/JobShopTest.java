@@ -1,6 +1,7 @@
 package edu.ohiou.mfgresearch;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,8 +9,11 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.moeaframework.core.Variation;
 
 import edu.ohiou.mfgresearch.lambda.Omni;
+import edu.ohiou.mfgresearch.operators.GPMXCrossover;
+import edu.ohiou.mfgresearch.operators.SwapMutation;
 import edu.ohiou.mfgresearch.schedule.Job;
 import edu.ohiou.mfgresearch.schedule.JobShopProblem;
 import edu.ohiou.mfgresearch.schedule.JobT;
@@ -129,7 +133,12 @@ public class JobShopTest {
 			bounds.add(Arrays.asList(1.0, 8000.0, 8000.0, 8000.0));
 			TestAutomator test = new TestAutomator(bounds, alpha, genCount, seedP, prob, ops,
 					getClass().getResource("/META-INF/jobshop/ta_15_15_dd_res.csv").getFile());
-			test.test();
+			
+			List<Variation> ops1=new ArrayList<Variation>();
+			ops1.add(new GPMXCrossover(15));
+			ops1.add(new SwapMutation(0.5));
+			test.test(ops1);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
