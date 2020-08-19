@@ -2,14 +2,12 @@ package edu.ohiou.mfgresearch;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.moeaframework.core.Solution;
 
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.schedule.Job;
@@ -60,7 +58,7 @@ public class JobShopTest {
 
 	}
 
-	@Test
+//	@Test
 	public void testHeuristic() throws Exception {
 		LinkedList<PerformanceMeasures> measure1 = new LinkedList<PerformanceMeasures>();
 		measure1.add(PerformanceMeasures.NUM_TARDY_JOB);
@@ -83,7 +81,7 @@ public class JobShopTest {
 		ii.forEach(i -> System.out.println(i));
 	}
 
-	@Test
+//	@Test
 	public void testNumTardy() {
 		try {
 			JobShopProblem prob = DataGenerator.readTaillardToJobShopWithDD(
@@ -127,10 +125,10 @@ public class JobShopTest {
 				}
 			});
 			List<List<Double>> bounds = new LinkedList<List<Double>>();
-			bounds.add(Arrays.asList(0.0, 15.0, 15.0, 15.0));
-			bounds.add(Arrays.asList(0.0, 8000.0, 8000.0, 8000.0));
+			bounds.add(Arrays.asList(1.0, 15.0, 15.0, 15.0));
+			bounds.add(Arrays.asList(1.0, 8000.0, 8000.0, 8000.0));
 			TestAutomator test = new TestAutomator(bounds, alpha, genCount, seedP, prob, ops,
-					"/META-INF/jobshop/ta_15_15_dd_res.csv");
+					getClass().getResource("/META-INF/jobshop/ta_15_15_dd_res.csv").getFile());
 			test.test();
 		} catch (Exception e) {
 			e.printStackTrace();
