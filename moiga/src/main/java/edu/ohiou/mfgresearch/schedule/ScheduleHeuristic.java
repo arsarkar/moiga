@@ -11,7 +11,7 @@ public enum ScheduleHeuristic
 {
     FCFS(1)
     {
-    	public Solution evaluate(List<JobT> jobs,int jcnt,int mcnt)
+    	public List<JobT> evaluate(List<JobT> jobs,int jcnt,int mcnt)
     	{
     		
     		double mtime[]=new double[mcnt];
@@ -31,19 +31,19 @@ public enum ScheduleHeuristic
             	jid.completionTime=Arrays.stream(mtime).max().getAsDouble();
             }
 //            jobs.forEach(i->System.out.println(i));
-            Solution temp=new Solution(jobs.size(),5);
-            for(int i=0;i<jobs.size();i++)
-            {
-            	temp.setVariable(i,jobs.get(i).copy());
-            	jobs.get(i).completionTime=0.0;
-            }
-            return temp;
+            // Solution temp=new Solution(jobs.size(),5);
+            // for(int i=0;i<jobs.size();i++)
+            // {
+            // 	temp.setVariable(i,jobs.get(i).copy());
+            // 	jobs.get(i).completionTime=0.0;
+            // }
+            return jobs;
     	}
     },
 	
 	SPT(2)
     {
-    	public Solution evaluate(List<JobT> jobs,int jcnt,int mcnt)
+    	public List<JobT> evaluate(List<JobT> jobs,int jcnt,int mcnt)
     	{
             double mtime[]=new double[mcnt];
             Collections.sort(jobs,new Comparator<JobT>(){
@@ -76,18 +76,18 @@ public enum ScheduleHeuristic
             	jid.completionTime=Arrays.stream(mtime).max().getAsDouble();
             }
 //            jobs.forEach(i->System.out.println(i));
-            Solution temp=new Solution(jobs.size(),5);
-            for(int i=0;i<jobs.size();i++)
-            {
-            	temp.setVariable(i,jobs.get(i).copy());
-            	jobs.get(i).completionTime=0.0;
-            }
-            return temp;
+            // Solution temp=new Solution(jobs.size(),5);
+            // for(int i=0;i<jobs.size();i++)
+            // {
+            // 	temp.setVariable(i,jobs.get(i).copy());
+            // 	jobs.get(i).completionTime=0.0;
+            // }
+            return jobs;
     	}
     },
     LWKR(3)
     {
-    	public Solution evaluate(List<JobT> jobs,int jcnt,int mcnt)
+    	public List<JobT> evaluate(List<JobT> jobs,int jcnt,int mcnt)
     	{
             int tcnt[]=new int[jcnt];
             double mtime[]=new double[mcnt];
@@ -132,18 +132,18 @@ public enum ScheduleHeuristic
                 System.out.println();
             }
 //            jobs.forEach(i->System.out.println(i));
-            Solution temp=new Solution(jobs.size(),5);
-            for(int i=0;i<jobs.size();i++)
-            {
-            	temp.setVariable(i,jobs.get(i).copy());
-            	jobs.get(i).completionTime=0.0;
-            }
-            return temp;
+            // Solution temp=new Solution(jobs.size(),5);
+            // for(int i=0;i<jobs.size();i++)
+            // {
+            // 	temp.setVariable(i,jobs.get(i).copy());
+            // 	jobs.get(i).completionTime=0.0;
+            // }
+            return jobs;
     	}
     },
     DDate(4)
     {
-    	public Solution evaluate(List<JobT> jobs,int jcnt,int mcnt)
+    	public List<JobT> evaluate(List<JobT> jobs,int jcnt,int mcnt)
     	{
 //            int tcnt[]=new int[jcnt];
             double mtime[]=new double[mcnt];
@@ -176,12 +176,12 @@ public enum ScheduleHeuristic
             	System.out.println();
             }
             Solution temp=new Solution(jobs.size(),5);
-            for(int i=0;i<jobs.size();i++)
-            {
-            	temp.setVariable(i,jobs.get(i).copy());
-            	jobs.get(i).completionTime=0.0;
-            }
-            return temp;
+            // for(int i=0;i<jobs.size();i++)
+            // {
+            // 	temp.setVariable(i,jobs.get(i).copy());
+            // 	jobs.get(i).completionTime=0.0;
+            // }
+            return jobs;
     	}
     };
     public int abv;
@@ -189,7 +189,7 @@ public enum ScheduleHeuristic
     {
            this.abv = abv;
     }
-    public Solution evaluate(List<JobT> jobs,int m,int n)
+    public List<JobT> evaluate(List<JobT> jobs,int m,int n)
 	{
     	return null;
 	}

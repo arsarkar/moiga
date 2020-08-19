@@ -56,7 +56,7 @@ public class DataGeneratorTest
 		// JobShopProblem prob=ob.taillardToJobShop("D:\\GA and BioInspired Algo\\Test_Cases\\ta_15_15.txt", measure1);
 		// prob.getJobs().forEach(i->System.out.println(i));
 	}
-	//@Test
+	@Test
 	public void test1() throws Exception
 	{
 		Problem prob;

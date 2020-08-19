@@ -1,21 +1,25 @@
 package edu.ohiou.mfgresearch;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.moeaframework.core.Solution;
 
 import edu.ohiou.mfgresearch.lambda.Omni;
+import edu.ohiou.mfgresearch.schedule.Job;
 import edu.ohiou.mfgresearch.schedule.JobShopProblem;
 import edu.ohiou.mfgresearch.schedule.JobT;
 import edu.ohiou.mfgresearch.schedule.PerformanceMeasures;
 import edu.ohiou.mfgresearch.schedule.ScheduleHeuristic;
 
 public class JobShopTest {
-//	@Test
+	// @Test
 	public void test() throws Exception {
 		LinkedList<PerformanceMeasures> measure1 = new LinkedList<PerformanceMeasures>();
 		measure1.add(PerformanceMeasures.NUM_TARDY_JOB);
@@ -57,8 +61,7 @@ public class JobShopTest {
 	}
 
 	@Test
-	public void testHeuristic() throws Exception
-	{
+	public void testHeuristic() throws Exception {
 		LinkedList<PerformanceMeasures> measure1 = new LinkedList<PerformanceMeasures>();
 		measure1.add(PerformanceMeasures.NUM_TARDY_JOB);
 		measure1.add(PerformanceMeasures.TOTAL_TARDINESS);
@@ -67,42 +70,70 @@ public class JobShopTest {
 		DataGenerator ob = new DataGenerator(file1.getFile(), 1, 10, 3, 3);
 		// ob.generateJobShop(0.4,0.6);
 		JobShopProblem prob;
-		 prob=(JobShopProblem)ob.createJobShopProb(measure1);
+		prob = (JobShopProblem) ob.createJobShopProb(measure1);
 		URL file2 = getClass().getResource("/META-INF/jobshop/ta_15_15.txt");
-//		prob = DataGenerator.amendTaillardToJobShop(file2.getFile(), measure1, 0.4, 0.6);
+		// prob = DataGenerator.amendTaillardToJobShop(file2.getFile(), measure1, 0.4,
+		// 0.6);
 		List<JobT> ii = prob.getJobs();
 		// ii.forEach(i->System.out.println("->"+i));
-		Solution sol=ScheduleHeuristic.FCFS.evaluate(ii, 3,3);
-		for(int i=0;i<sol.getNumberOfVariables();i++)
-			System.out.println(sol.getVariable(i));
+		List<JobT> sol = ScheduleHeuristic.FCFS.evaluate(ii, 3, 3);
+		// for(int i=0;i<sol.getNumberOfVariables();i++)
+		// System.out.println(sol.getVariable(i));
 		// Solution sol1=prob.newSolution();
-		 ii.forEach(i->System.out.println(i));
+		ii.forEach(i -> System.out.println(i));
 	}
 
-//	@Test
+	@Test
 	public void testNumTardy() {
 		try {
-			JobShopProblem prob = 
-			DataGenerator.readTaillardToJobShopWithDD(getClass().getResource("/META-INF/jobshop/ta_15_15_dd.txt").getFile(),
-			Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.MAKESPAN).toList(), 0.4, 0.8);
+			JobShopProblem prob = DataGenerator.readTaillardToJobShopWithDD(
+					getClass().getResource("/META-INF/jobshop/ta_15_15_dd.txt").getFile(),
+					Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.MAKESPAN).toList(), 0.4, 0.8);
 
-			Solution sched1 = prob.newSolution() ;
-			prob.evaluate(sched1);
-			List<JobT> jobs = new LinkedList<JobT>();
-			for(int i= 0; i < sched1.getNumberOfVariables(); i++){
-				jobs.add((JobT)sched1.getVariable(i));
-			}
-			jobs.sort(Comparator.comparing(JobT::getJobID));
-			jobs.stream().distinct().forEach(j->{
-				System.out.println(j.toString());
-			});
-			System.out.println("Number of tardy jobs: " + sched1.getObjective(0));
-			System.out.println("Makespan: " + sched1.getObjective(1));
+			List<JobT> js = prob.getJobs();
+			List<JobT> sol = ScheduleHeuristic.SPT.evaluate(js, 15, 15);
+			double nt = PerformanceMeasures.NUM_TARDY_JOB
+					.evaluate(sol.stream().map(j -> (Job) j).collect(Collectors.toList()));
+			double ms = PerformanceMeasures.MAXIMUM_TARDINESS
+					.evaluate(sol.stream().map(j -> (Job) j).collect(Collectors.toList()));
+			System.out.println("Number of tardy jobs: " + nt);
+			System.out.println("Maximum Tardiness: " + ms);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	} 
+	}
 
+	@Test
+	public void testJobShopGA1() {
+		JobShopProblem prob;
+		try {
+			prob = DataGenerator.readTaillardToJobShopWithDD(
+					getClass().getResource("/META-INF/jobshop/ta_15_15_dd.txt").getFile(),
+					Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.TOTAL_TARDINESS).toList(), 0.4, 0.8);
 
+			double alpha[] = { 0.3, 0.5, 0.7, 2.0 };
+			int genCount[] = { 100, 300, 600, 1000 };
+			double seedP[] = { 0.0, 0.1, 0.25, 0.5 };
+			List<BinaryOperator<Double>> ops = new LinkedList<BinaryOperator<Double>>();
+			ops.add(new BinaryOperator<Double>() {
 
+				@Override
+				public Double apply(Double t, Double u) {
+					return t + u;
+				}
+
+				public String toString() {
+					return "Sum";
+				}
+			});
+			List<List<Double>> bounds = new LinkedList<List<Double>>();
+			bounds.add(Arrays.asList(0.0, 15.0, 15.0, 15.0));
+			bounds.add(Arrays.asList(0.0, 8000.0, 8000.0, 8000.0));
+			TestAutomator test = new TestAutomator(bounds, alpha, genCount, seedP, prob, ops,
+					"/META-INF/jobshop/ta_15_15_dd_res.csv");
+			test.test();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
