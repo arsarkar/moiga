@@ -127,8 +127,8 @@ public class JobShopTest {
 				}
 			});
 			List<List<Double>> bounds = new LinkedList<List<Double>>();
-			bounds.add(Arrays.asList(0.0, 15.0, 15.0, 15.0));
-			bounds.add(Arrays.asList(0.0, 8000.0, 8000.0, 8000.0));
+			bounds.add(Arrays.asList(1.0, 15.0, 15.0, 15.0));
+			bounds.add(Arrays.asList(1.0, 8000.0, 8000.0, 8000.0));
 			TestAutomator test = new TestAutomator(bounds, alpha, genCount, seedP, prob, ops,
 					"/META-INF/jobshop/ta_15_15_dd_res.csv");
 			test.test();
