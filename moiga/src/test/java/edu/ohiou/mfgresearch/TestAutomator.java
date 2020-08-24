@@ -131,7 +131,7 @@ public class TestAutomator
 	List<List<Double>> run(BinaryOperator<Double> agg,
 			int genCount,double seed,double alpha,List<Variation> operators) throws Exception
 	{
-		TerminationCondition[] term= { populationData -> populationData.getBestCandidateFitness()>=2.0,new GenerationCount(genCount)};
+		TerminationCondition[] term= { populationData -> populationData.getBestCandidateFitness()>=2.0, new GenerationCount(genCount)};
 		ParetoFinder ob1=new ParetoFinder
 				(bounds,prob,
 						agg,

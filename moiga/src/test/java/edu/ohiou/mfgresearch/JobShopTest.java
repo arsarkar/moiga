@@ -5,12 +5,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
+import org.uncommons.watchmaker.framework.TerminationCondition;
+import org.uncommons.watchmaker.framework.selection.RankSelection;
+import org.uncommons.watchmaker.framework.termination.GenerationCount;
+import org.uncommons.watchmaker.framework.EvaluatedCandidate;
 
+import edu.ohiou.mfgresearch.fuzzy.FuzzyMembershipT;
+import edu.ohiou.mfgresearch.fuzzy.Fuzzyficator;
 import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.operators.GPMXCrossover;
 import edu.ohiou.mfgresearch.operators.SwapMutation;
@@ -19,6 +27,9 @@ import edu.ohiou.mfgresearch.schedule.JobShopProblem;
 import edu.ohiou.mfgresearch.schedule.JobT;
 import edu.ohiou.mfgresearch.schedule.PerformanceMeasures;
 import edu.ohiou.mfgresearch.schedule.ScheduleHeuristic;
+import edu.ohiou.mfgresearch.solver.GASolver;
+import edu.ohiou.mfgresearch.solver.ParetoFinder;
+import edu.ohiou.mfgresearch.solver.Selector;
 
 public class JobShopTest {
 	// @Test
@@ -129,7 +140,7 @@ public class JobShopTest {
 				}
 			});
 			List<List<Double>> bounds = new LinkedList<List<Double>>();
-			bounds.add(Arrays.asList(1.0, 15.0, 15.0, 15.0));
+			bounds.add(Arrays.asList(1.0, 16.0, 15.0, 16.0));
 			bounds.add(Arrays.asList(1.0, 8000.0, 8000.0, 8000.0));
 			TestAutomator test = new TestAutomator(bounds, alpha, genCount, seedP, prob, ops,
 					getClass().getResource("/META-INF/jobshop/ta_15_15_dd_res.csv").getFile());
@@ -139,6 +150,78 @@ public class JobShopTest {
 			ops1.add(new SwapMutation(0.5));
 			test.test(ops1);
 			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testJobShopGA2() {
+		JobShopProblem prob;
+		try {
+			prob = DataGenerator.readTaillardToJobShopWithDD(
+					getClass().getResource("/META-INF/jobshop/ta_15_15_dd.txt").getFile(),
+					Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.TOTAL_TARDINESS).toList(), 0.4, 0.8);
+
+			double alpha[] = { 0.3, 0.5, 0.7, 2.0 };
+			int genCount[] = { 100, 300, 600, 1000 };
+			double seedP[] = { 0.0, 0.1, 0.25, 0.5 };
+
+			BinaryOperator<Double> aggr =
+			new BinaryOperator<Double>() {
+
+				@Override
+				public Double apply(Double t, Double u) {
+					return t + u;
+				}
+
+				public String toString() {
+					return "Sum";
+				}
+			};
+			List<List<Double>> bounds = new LinkedList<List<Double>>();
+			bounds.add(Arrays.asList(1.0, 11.0, 11.0, 11.0));
+			bounds.add(Arrays.asList(1.0, 15000.0, 15000.0, 15000.0));
+
+			TerminationCondition[] term= { populationData -> populationData.getBestCandidateFitness()>=2.0,new GenerationCount(500)};
+			List<Fuzzyficator> fuzzyFictators = new LinkedList<Fuzzyficator>();
+			for(List<Double> i:bounds)
+			{
+				fuzzyFictators.add(new Fuzzyficator(new FuzzyMembershipT(
+						i.get(0),
+						i.get(1),
+						i.get(2),
+						i.get(3)
+						)));
+			}
+			
+			List<Variation> ops1=new ArrayList<Variation>();
+			ops1.add(new GPMXCrossover(15));
+			ops1.add(new SwapMutation(0.5));
+
+			GASolver solver = new GASolver(prob, 
+									fuzzyFictators, 
+									aggr,
+									ops1,
+									new Double[]{0.2, 0.5},
+									new Selector(new RankSelection()), 
+									true, 
+									new Random(),
+									sol->{
+										// System.out.println(sol.getObjective(0) + "," + sol.getObjective(1));
+									},
+									pop_data->{});	
+
+			List<Solution> pop=Arrays.stream(solver.evolvePopulation(100, 0, term).toArray())
+													.map(ii->((EvaluatedCandidate<Solution>)ii).getCandidate())
+													.collect(Collectors.toList());						
+			Solution bs = pop.get(0);
+			pop.stream().forEach(s->{
+				// if(ParetoFinder.isDominant(Arrays.asList(s.getObjective(0), s.getObjective(1)), Arrays.asList(bs.getObjective(0), bs.getObjective(1)))){
+
+				// }
+				System.out.println(s.getObjective(0) + "," + s.getObjective(1));
+			});								
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

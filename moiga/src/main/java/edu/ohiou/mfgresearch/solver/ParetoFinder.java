@@ -187,8 +187,8 @@ public class ParetoFinder
 				if(h)
 				{
 					h1 = true;
-//					List<List<Double>> fuzzys=this.createFuzzyBound(r, delta);					
-					List<List<Double>> fuzzys=this.createFuzzyBoundAlt(r, getTrailingBox(s), this.alpha);
+					List<List<Double>> fuzzys=this.createFuzzyBound(r, delta);					
+					// List<List<Double>> fuzzys=this.createFuzzyBoundAlt(r, getTrailingBox(s), this.alpha);
 					
 					if(adaptiveAlpha)
 					{
@@ -332,7 +332,7 @@ public class ParetoFinder
 	}	
 	
 	//Checks is r1 is dominating r2
-	boolean isDominant(List<Double> r1,List<Double> r2)
+	public static boolean isDominant(List<Double> r1,List<Double> r2)
 	{
 		int count =0,eq=0;
 		for(int k= 0; k<r1.size() ; k++)
