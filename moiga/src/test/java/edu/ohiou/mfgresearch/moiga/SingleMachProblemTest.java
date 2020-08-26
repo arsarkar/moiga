@@ -1,4 +1,4 @@
-package edu.ohiou.mfgresearch.moiga.test;
+package edu.ohiou.mfgresearch.moiga;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -38,7 +38,7 @@ import edu.ohiou.mfgresearch.solver.GASolver;
 import edu.ohiou.mfgresearch.solver.Selector;
 
 
-public class ScheduleProblemTest {
+public class SingleMachProblemTest {
 
 	@Test
 	public void testInitialScheduleCandidate() throws Exception{

@@ -1,4 +1,4 @@
-package edu.ohiou.mfgresearch;
+package edu.ohiou.mfgresearch.moiga;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package edu.ohiou.mfgresearch;
+package edu.ohiou.mfgresearch.moiga;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -28,7 +28,6 @@ import edu.ohiou.mfgresearch.schedule.JobT;
 import edu.ohiou.mfgresearch.schedule.PerformanceMeasures;
 import edu.ohiou.mfgresearch.schedule.ScheduleHeuristic;
 import edu.ohiou.mfgresearch.solver.GASolver;
-import edu.ohiou.mfgresearch.solver.ParetoFinder;
 import edu.ohiou.mfgresearch.solver.Selector;
 
 public class JobShopTest {
@@ -117,45 +116,6 @@ public class JobShopTest {
 	}
 
 	@Test
-	public void testJobShopGA1() {
-		JobShopProblem prob;
-		try {
-			prob = DataGenerator.readTaillardToJobShopWithDD(
-					getClass().getResource("/META-INF/jobshop/ta_15_15_dd.txt").getFile(),
-					Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.TOTAL_TARDINESS).toList(), 0.4, 0.8);
-
-			double alpha[] = { 0.3, 0.5, 0.7, 2.0 };
-			int genCount[] = { 100, 300, 600, 1000 };
-			double seedP[] = { 0.0, 0.1, 0.25, 0.5 };
-			List<BinaryOperator<Double>> ops = new LinkedList<BinaryOperator<Double>>();
-			ops.add(new BinaryOperator<Double>() {
-
-				@Override
-				public Double apply(Double t, Double u) {
-					return t + u;
-				}
-
-				public String toString() {
-					return "Sum";
-				}
-			});
-			List<List<Double>> bounds = new LinkedList<List<Double>>();
-			bounds.add(Arrays.asList(1.0, 16.0, 15.0, 16.0));
-			bounds.add(Arrays.asList(1.0, 8000.0, 8000.0, 8000.0));
-			TestAutomator test = new TestAutomator(bounds, alpha, genCount, seedP, prob, ops,
-					getClass().getResource("/META-INF/jobshop/ta_15_15_dd_res.csv").getFile());
-			
-			List<Variation> ops1=new ArrayList<Variation>();
-			ops1.add(new GPMXCrossover(15));
-			ops1.add(new SwapMutation(0.5));
-			test.test(ops1);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Test
 	public void testJobShopGA2() {
 		JobShopProblem prob;
 		try {
@@ -180,8 +140,8 @@ public class JobShopTest {
 				}
 			};
 			List<List<Double>> bounds = new LinkedList<List<Double>>();
-			bounds.add(Arrays.asList(1.0, 11.0, 11.0, 11.0));
-			bounds.add(Arrays.asList(1.0, 15000.0, 15000.0, 15000.0));
+			bounds.add(Arrays.asList(11.0, 1.0, 11.0, 1.0));
+			bounds.add(Arrays.asList(15000.0, 1.0, 15000.0, 1.0));
 
 			TerminationCondition[] term= { populationData -> populationData.getBestCandidateFitness()>=2.0,new GenerationCount(500)};
 			List<Fuzzyficator> fuzzyFictators = new LinkedList<Fuzzyficator>();
@@ -226,4 +186,47 @@ public class JobShopTest {
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+	/**
+	 * test for jo shop pareto finder algorithm 
+	 */
+	public void testJobShopGA1() {
+		JobShopProblem prob;
+		try {
+			prob = DataGenerator.readTaillardToJobShopWithDD(
+					getClass().getResource("/META-INF/jobshop/ta_15_15_dd.txt").getFile(),
+					Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.TOTAL_TARDINESS).toList(), 0.4, 0.8);
+
+			double alpha[] = { 0.3, 0.5, 0.7, 2.0 };
+			int genCount[] = { 100, 300, 600, 1000 };
+			double seedP[] = { 0.0, 0.1, 0.25, 0.5 };
+			List<BinaryOperator<Double>> ops = new LinkedList<BinaryOperator<Double>>();
+			ops.add(new BinaryOperator<Double>() {
+
+				@Override
+				public Double apply(Double t, Double u) {
+					return t + u;
+				}
+
+				public String toString() {
+					return "Sum";
+				}
+			});
+			List<List<Double>> bounds = new LinkedList<List<Double>>();
+			bounds.add(Arrays.asList(16.0, 1.0, 16.0, 1.0));
+			bounds.add(Arrays.asList(20000.0, 1.0, 20000.0, 1.0));
+			TestAutomator test = new TestAutomator(bounds, alpha, genCount, seedP, prob, ops,
+					getClass().getResource("/META-INF/jobshop/ta_15_15_dd_res.csv").getFile());
+			
+			List<Variation> ops1=new ArrayList<Variation>();
+			ops1.add(new GPMXCrossover(15));
+			ops1.add(new SwapMutation(0.5));
+			test.test(ops1);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
+

@@ -187,8 +187,8 @@ public class ParetoFinder
 				if(h)
 				{
 					h1 = true;
-					List<List<Double>> fuzzys=this.createFuzzyBound(r, delta);					
-					// List<List<Double>> fuzzys=this.createFuzzyBoundAlt(r, getTrailingBox(s), this.alpha);
+					//List<List<Double>> fuzzys=this.createFuzzyBound(r, delta);					
+					List<List<Double>> fuzzys=this.createFuzzyBoundAlt(r, getTrailingBox(s), this.alpha);
 					
 					if(adaptiveAlpha)
 					{
