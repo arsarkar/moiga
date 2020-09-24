@@ -56,6 +56,8 @@ public class MoeaTest {
 			System.out.printf("f1 = %f, f2 = %f \n", res.getObjective(0), res.getObjective(1));
 		});
 	}
+
+	
 	// //@Test
 	// public void GASolverMultZDT1(){
 	// List<Fuzzyficator> fuzzys = new LinkedList<Fuzzyficator>();

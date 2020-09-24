@@ -134,7 +134,7 @@ public class DataGeneratorTest
 		bounds.add(nT);
 		bounds.add(TT);
 		System.out.println(Arrays.toString(bounds.toArray()));
-		TestAutomator test=new TestAutomator(bounds, alpha, genCount, seedP, prob, ops, 
+		TestAutomator test=new TestAutomator(bounds, alpha, genCount, seedP, prob, ops, 1,
 				"/META-INF/single/Result_40_measure1.csv");
 		test.test();
 	}
