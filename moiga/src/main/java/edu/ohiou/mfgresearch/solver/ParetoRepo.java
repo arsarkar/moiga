@@ -25,7 +25,7 @@ public class ParetoRepo extends Hashtable<List<List<Double>>, List<Solution>>
 					continue outer;
 			}
 			selected.add(i);
-			//if(selected.size()>=noOfPts)
+			if(selected.size()>=noOfPts)
 				return selected;
 		}
 //		System.out.println("Selected : "+selected.size()+" "+noOfPts);

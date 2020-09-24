@@ -202,7 +202,7 @@ public class JobShopTest {
 
 			final double alpha[] = {0.3};
 			final int genCount[] = {100}; //, 
-			final double seedP[] = {0.0, 0.1};
+			final double seedP[] = {0.0, 0.1, 0.3, 0.5, 0.7, 0.9};
 			final List<BinaryOperator<Double>> ops = new LinkedList<BinaryOperator<Double>>();
 			ops.add(new BinaryOperator<Double>() {
 
@@ -385,6 +385,24 @@ public class JobShopTest {
 
 				public String toString() {
 					return "Sum";
+				}
+			});
+			aggr.add(new BinaryOperator<Double>() {
+
+				@Override
+				public Double apply(final Double t, final Double u) {
+					double s = 0;
+					if(t == 1){
+						s = t + 1;
+					}
+					if(u == 1){
+						s = u + 1;
+					}
+					return s;
+				}
+
+				public String toString() {
+					return "hybrid";
 				}
 			});
 			final List<List<Double>> bounds = new LinkedList<List<Double>>();
