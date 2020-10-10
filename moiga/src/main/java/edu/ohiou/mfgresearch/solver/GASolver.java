@@ -98,6 +98,8 @@ public class GASolver extends GenerationalEvolutionEngine<Solution> {
 		this.problem = prob;
 	}
 
+	
+
 	private static EvolutionaryOperator<Solution> createOperatorPipe(List<Variation> operators, Double[] probability, Random rng) {
 //		List<EvolutionaryOperator<Solution>> watchOps = new LinkedList<EvolutionaryOperator<Solution>>();
 		//add the crosover operator
@@ -170,12 +172,11 @@ public class GASolver extends GenerationalEvolutionEngine<Solution> {
 			@Override
 			public double getFitness(Solution candidate, List<? extends Solution> population) {
 				prob.evaluate(candidate);
-				return
-				IntStream.range(0, candidate.getNumberOfObjectives())
-						.boxed()
-						.map(i->fuzzyficators.get(i).apply(candidate.getObjective(i))) //fuzzyfy the solution
-						.reduce(aggregator) //add all fuzzy satisfaction
-						.get();
+				return IntStream.range(0, candidate.getNumberOfObjectives())
+								.boxed()
+								.map(i->fuzzyficators.get(i).apply(candidate.getObjective(i))) //fuzzyfy the solution
+								.reduce(aggregator) //add all fuzzy satisfaction
+								.get();
 			}
 
 			@Override
@@ -186,4 +187,15 @@ public class GASolver extends GenerationalEvolutionEngine<Solution> {
 		return fitnessEvaluator;
 	}
 
+	
+
+	public Problem getProblem() {
+		return problem;
+	}
+
+	public void setProblem(Problem problem) {
+		this.problem = problem;
+	}
+
+	
 }

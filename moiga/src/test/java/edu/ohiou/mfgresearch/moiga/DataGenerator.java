@@ -230,7 +230,7 @@ public class DataGenerator
 		   {
 			   if(a[k].equals(""))
 				   continue;
-			   int ind=Integer.parseInt(a[k])-1;
+			   int ind=Integer.parseInt(a[k])-1; //machine ID
 //				System.out.println(ind+" "+i+" "+j);
 			   task[ind][0]=j;
 			   task[ind][1]=time[i][j];

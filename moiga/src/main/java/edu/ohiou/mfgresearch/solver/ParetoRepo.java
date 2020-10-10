@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 
 public class ParetoRepo extends Hashtable<List<List<Double>>, List<Solution>>
@@ -15,8 +16,10 @@ public class ParetoRepo extends Hashtable<List<List<Double>>, List<Solution>>
 	List<Solution> getPoints(List<List<Double>> searchSpace,int noOfPts)
 	{
 		List<Solution> points=this.valueList();
+		NondominatedPopulation pop = new NondominatedPopulation();
+		pop.addAll(points);
 		List<Solution> selected=new ArrayList<Solution>();
-		outer:for(Solution i:points)
+		outer:for(Solution i:pop)
 		{
 			for(int j=0;j<searchSpace.size();j++)
 			{

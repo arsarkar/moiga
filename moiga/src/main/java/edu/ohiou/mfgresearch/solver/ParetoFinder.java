@@ -382,12 +382,12 @@ public class ParetoFinder
     	if(seed==null || seed.size()==0)
     		pop=Arrays.stream(
     						//solver.evolvePopulation(100, 0, seed,term).toArray())
-    							solver.evolvePopulation(100, 0,term).toArray())
+    							solver.evolvePopulation(100, 0, term).toArray())
     						.map(ii->((EvaluatedCandidate<Solution>)ii).getCandidate())
     						.collect(Collectors.toList());
     	else
     		pop=Arrays.stream(
-						solver.evolvePopulation(100, 0,seed, 
+						solver.evolvePopulation(100, 0, seed, 
 								term).toArray())
 					.map(ii->((EvaluatedCandidate<Solution>)ii).getCandidate())
 					.collect(Collectors.toList());
