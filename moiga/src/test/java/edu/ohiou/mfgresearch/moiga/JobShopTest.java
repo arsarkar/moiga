@@ -49,7 +49,7 @@ import edu.ohiou.mfgresearch.solver.Selector;
 import edu.ohiou.mfgresearch.solver.algorithm.FuzzyNSGAProvider;
 
 public class JobShopTest {
-
+	
 	@Test
 	public void test() throws Exception {
 		final LinkedList<PerformanceMeasures> measure1 = new LinkedList<PerformanceMeasures>();
@@ -93,9 +93,9 @@ public class JobShopTest {
 
 	@Test
 	public void fileConversion() throws Exception {
-		DataGenerator.amendTaillardToJobShop(
-				getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.csv").getFile(),
-				Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.MAKESPAN).toList(), 0.4, 0.8);
+		// DataGenerator.amendTaillardToJobShop(
+		// 		getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.csv").getFile(),
+		// 		Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.MAKESPAN).toList(), 0.4, 0.8);
 
 	}
 

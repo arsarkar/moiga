@@ -20,23 +20,16 @@ public enum ScheduleHeuristic
             	double prev=0;
             	for(int i=0;i<jid.getTaskCount();i++)
             	{
-            		if(mtime[jid.task[i][0]]<prev)
-            			mtime[jid.task[i][0]]=prev;
-            		mtime[jid.task[i][0]]+=jid.task[i][1];
-            		prev=mtime[jid.task[i][0]];
+            		// if(mtime[jid.task[i][0]]<prev)
+            		// 	mtime[jid.task[i][0]]=prev;
+            		// mtime[jid.task[i][0]]+=jid.task[i][1];
+            		// prev=mtime[jid.task[i][0]];
             	}  
             	for(int k=0;k<mcnt;k++)
             		System.out.print(mtime[k]+" ");
             	System.out.println();
             	jid.completionTime=Arrays.stream(mtime).max().getAsDouble();
             }
-//            jobs.forEach(i->System.out.println(i));
-            // Solution temp=new Solution(jobs.size(),5);
-            // for(int i=0;i<jobs.size();i++)
-            // {
-            // 	temp.setVariable(i,jobs.get(i).copy());
-            // 	jobs.get(i).completionTime=0.0;
-            // }
             return jobs;
     	}
     },
@@ -61,14 +54,13 @@ public enum ScheduleHeuristic
             });
             for(JobT jid:jobs)
             {
-//            	System.out.println(jid.jobID);
             	double prev=0;
             	for(int i=0;i<jid.getTaskCount();i++)
             	{
-            		if(mtime[jid.task[i][0]]<prev)
-            			mtime[jid.task[i][0]]=prev;
-            		mtime[jid.task[i][0]]+=jid.task[i][1];
-            		prev=mtime[jid.task[i][0]];
+            		// if(mtime[jid.task[i][0]]<prev)
+            		// 	mtime[jid.task[i][0]]=prev;
+            		// mtime[jid.task[i][0]]+=jid.task[i][1];
+            		// prev=mtime[jid.task[i][0]];
             	}  
             	for(int k=0;k<mcnt;k++)
             		System.out.print(mtime[k]+" ");
@@ -107,7 +99,7 @@ public enum ScheduleHeuristic
             			flag=true;
             			double wtemp[]=new double[mcnt];
             			for(int k=tcnt[(int) jobs.get(i).jobID];k<jobs.get(i).getTaskCount();k++)
-            				wtemp[jobs.get(i).task[k][0]]+=jobs.get(i).task[k][1];
+            				// wtemp[jobs.get(i).task[k][0]]+=jobs.get(i).task[k][1];
             			wkr=Arrays.stream(wtemp).max().getAsDouble();
             			if(temp>wkr)
             			{
@@ -117,7 +109,7 @@ public enum ScheduleHeuristic
             		}
             	if(jid==null)
             		break;
-            	ttemp=jid.task[tcnt[(int)jid.jobID]];
+            	// ttemp=jid.task[tcnt[(int)jid.jobID]];
             	
             	if(mtime[ttemp[0]]<lmt[(int) jid.jobID])
             		mtime[ttemp[0]]=lmt[(int) jid.jobID];
@@ -165,22 +157,18 @@ public enum ScheduleHeuristic
             	double prev=0;
             	for(int k=0;k<i.getTaskCount();k++)
             	{
-            		if(mtime[i.task[k][0]]<prev)
-            			mtime[i.task[k][0]]=prev;
-	            	mtime[i.task[k][0]]+=i.task[k][1];
-            		prev=mtime[i.task[k][0]];
-	            	i.completionTime=Math.max(i.completionTime,mtime[i.task[k][0]]);
+            		// if(mtime[i.task[k][0]]<prev)
+            		// 	mtime[i.task[k][0]]=prev;
+	            	// mtime[i.task[k][0]]+=i.task[k][1];
+            		// prev=mtime[i.task[k][0]];
+	            	// i.completionTime=Math.max(i.completionTime,mtime[i.task[k][0]]);
             	}
             	for(int k=0;k<mcnt;k++)
             		System.out.print(mtime[k]+" ");
             	System.out.println();
             }
             Solution temp=new Solution(jobs.size(),5);
-            // for(int i=0;i<jobs.size();i++)
-            // {
-            // 	temp.setVariable(i,jobs.get(i).copy());
-            // 	jobs.get(i).completionTime=0.0;
-            // }
+
             return jobs;
     	}
     };
