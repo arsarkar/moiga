@@ -11,10 +11,7 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.moeaframework.Analyzer;
 import org.moeaframework.Executor;
-import org.moeaframework.algorithm.NSGAII;
-import org.moeaframework.core.Algorithm;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
@@ -22,17 +19,15 @@ import org.moeaframework.core.Variation;
 import org.moeaframework.core.indicator.Hypervolume;
 import org.moeaframework.core.indicator.Spacing;
 import org.moeaframework.core.spi.AlgorithmFactory;
-import org.moeaframework.core.spi.AlgorithmProvider;
 import org.moeaframework.core.spi.OperatorFactory;
 import org.moeaframework.core.spi.OperatorProvider;
-import org.moeaframework.util.TypedProperties;
+import org.uncommons.maths.random.Probability;
+import org.uncommons.watchmaker.framework.EvaluatedCandidate;
+import org.uncommons.watchmaker.framework.FitnessEvaluator;
 import org.uncommons.watchmaker.framework.TerminationCondition;
 import org.uncommons.watchmaker.framework.selection.RankSelection;
 import org.uncommons.watchmaker.framework.selection.TournamentSelection;
 import org.uncommons.watchmaker.framework.termination.GenerationCount;
-import org.uncommons.maths.random.Probability;
-import org.uncommons.watchmaker.framework.EvaluatedCandidate;
-import org.uncommons.watchmaker.framework.FitnessEvaluator;
 
 import edu.ohiou.mfgresearch.fuzzy.FuzzyMembershipT;
 import edu.ohiou.mfgresearch.fuzzy.Fuzzyficator;
@@ -50,7 +45,7 @@ import edu.ohiou.mfgresearch.solver.algorithm.FuzzyNSGAProvider;
 
 public class JobShopTest {
 
-	@Test
+//	@Test
 	public void test() throws Exception {
 		final LinkedList<PerformanceMeasures> measure1 = new LinkedList<PerformanceMeasures>();
 		measure1.add(PerformanceMeasures.NUM_TARDY_JOB);

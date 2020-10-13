@@ -7,20 +7,13 @@ import java.util.function.BinaryOperator;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
-import org.moeaframework.Analyzer;
 import org.moeaframework.Executor;
-import org.moeaframework.Instrumenter;
-import org.moeaframework.algorithm.single.GeneticAlgorithm;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Problem;
-import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
 import org.moeaframework.core.spi.AlgorithmFactory;
 import org.moeaframework.core.spi.OperatorFactory;
 import org.moeaframework.core.spi.OperatorProvider;
-import org.moeaframework.core.variable.RealVariable;
-import org.moeaframework.problem.misc.Binh;
-import org.moeaframework.problem.misc.Binh2;
 
 import edu.ohiou.mfgresearch.fuzzy.FuzzyMembershipT;
 import edu.ohiou.mfgresearch.fuzzy.Fuzzyficator;
@@ -34,7 +27,7 @@ import edu.ohiou.mfgresearch.solver.algorithm.FuzzyNSGAProvider;
 
 public class MOEAFunction {
     
-    @Test
+//    @Test
     public void MOEA_NSGA_Functions() throws Exception {
 
         //Problems: Binh, Binh2, Binh3, Fonseca, Fonseca2, Kursawe
@@ -49,7 +42,7 @@ public class MOEAFunction {
         // });
     }
 
-    @Test
+//    @Test
     public void MOEA_Fuzzy_Functions() throws Exception {
 
         final List<Fuzzyficator> fuzzyFictators = new LinkedList<Fuzzyficator>();
@@ -101,6 +94,10 @@ public class MOEAFunction {
             getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.csv").getFile(),
             Omni.of(pm).toList(), 
                     0.4, 0.8);
+        
+        prob.getJobs().forEach(i->System.out.println(i));
+        System.exit(0);
+        
         OperatorFactory.getInstance().addProvider(new OperatorProvider() {
             public String getMutationHint(final Problem problem) {
                 return null;
@@ -148,7 +145,7 @@ public class MOEAFunction {
         
     }
 
-    @Test
+//    @Test
     public void MOEAFNSGAJS1() throws Exception {
         JobShopProblem prob = DataGenerator.readTaillardToJobShopWithDD(
             getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.csv").getFile(),

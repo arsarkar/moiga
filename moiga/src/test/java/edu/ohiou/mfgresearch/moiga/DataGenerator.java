@@ -201,14 +201,15 @@ public class DataGenerator
 	   sc.nextLine();
 	   String ss[]=sc.nextLine().trim().split(",");
 //		System.out.println(Arrays.deepToString(ss));
-	   int jcnt=Integer.parseInt(ss[0]);
-	   int mcnt=Integer.parseInt(ss[1]);	
+	   int jcnt=Integer.parseInt(ss[0]);//job count 
+	   int mcnt=Integer.parseInt(ss[1]);//machine count
 	   sc.nextLine();
-	   int time[][]=new int[jcnt][mcnt];
+	   int time[][]=new int[jcnt][mcnt];// read pt array for each job i.e. initial pt matrix of job x machine 
+	   
 	   List<JobT> jobs = new ArrayList<JobT>(mcnt);
 	   for(int i=0;i<jcnt;i++)
 	   {	
-		   String[]a=sc.nextLine().trim().split(" ");
+		   String[]a=sc.nextLine().trim().split(" ");//convert each row to array
 		   int j=0;
 		   for(int k=0;k<a.length;k++)
 		   {
@@ -217,30 +218,47 @@ public class DataGenerator
 			   time[i][j++]=Integer.parseInt(a[k]);
 		   }
 	   }
+	   
 	   sc.nextLine();
-	   int mtime[]=new int[mcnt];
+	   int mtime[]=new int[mcnt];// array to store machine time in order to fix ct.. can be ignored not used till now
 	   for(int i=0;i<jcnt;i++)
 	   {
-		   int task[][]=new int[mcnt][2];
+		   int task[][]=new int[mcnt][2];// array to store (mt,pt) for each job
 		   String b = sc.nextLine();
-		   String[]a=b.trim().split(" ");
+		   String[]a=b.trim().split(" ");// array containing machine order as in 2nd array of ds which is Machine order
 		   // System.out.println(Arrays.deepToString(a));
 		   int j=0;
+		   /*
+		    *   Time :      1 3 6 7 3 6 
+				Machine order: 3 1 2 4 6 5 
+				Hence task order : [2, 1], [0, 3], [1, 6], [3, 7], [5, 3], [4, 6]
+			*/
 		   for(int k=0;k<a.length-1;k++)
 		   {
 			   if(a[k].equals(""))
 				   continue;
-			   int ind=Integer.parseInt(a[k])-1; //machine ID
+			   int ind=Integer.parseInt(a[k])-1; //machine order
 //				System.out.println(ind+" "+i+" "+j);
-			   task[ind][0]=j;
-			   task[ind][1]=time[i][j];
+			   
+			   //error 1
+//			   task[ind][0]=j;// mID added
+//			   task[ind][1]=time[i][j];//m time added
+			   
+			   // task order assigned here
+			   //new order fixed
+			   task[j][0]=ind;// mID added
+			   task[j][1]=time[i][j];//m time added
+			   
 			   mtime[j]+=time[i][j];
 //				DD=(int)Math.max(DD,mtime[j]);
 //				DD=(int) (Math.ceil(time[i][j]*(1-t-r/2.0))+Math.random()*(Math.ceil(time[i][j]*(1-t+r/2.0))-Math.ceil(time[i][j]*(1-t-r/2.0))));
 			   j++;
 		   }	
-		   int DD=Integer.parseInt(a[a.length-1]);		
+		   int DD=Integer.parseInt(a[a.length-1]);
+		   System.out.println("--@@->"+Arrays.deepToString(task));
 		   jobs.add(new JobT(i,DD,task));
+		   
+		   System.out.println("--->"+jobs.get(jobs.size()-1));
 	   }
 	   System.out.println("Number of jobs = " + jcnt);
 	   System.out.println("Number of machines = " + mcnt);
