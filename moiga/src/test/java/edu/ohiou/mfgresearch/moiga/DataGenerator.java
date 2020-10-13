@@ -244,6 +244,7 @@ public class DataGenerator {
 				job.addOperation(Long.valueOf(k + 1), Long.valueOf(mix), pt[i][k]);
 			}
 			int DD = Integer.parseInt(machix[machix.length - 1]);
+			job.setDueDate(DD);
 			jobs.add(job);
 		}
 		jobs.forEach(j -> System.out.println(j.toString()));

@@ -97,6 +97,18 @@ public class JobT extends Job {
 	}
 
 	/**
+	 * Get the only operation (required for job-operation)
+	 * @return
+	 */
+	public Operation getFirstOperation(){
+		return operations.get(0);
+	}
+
+	public List<Operation> getAllOperation() {
+		return operations;
+	}
+
+	/**
 	 * Generates list of JobT instances for each operations in this job
 	 * for using as a variable in the solution
 	 * @return List of JobT instances with only one operation
