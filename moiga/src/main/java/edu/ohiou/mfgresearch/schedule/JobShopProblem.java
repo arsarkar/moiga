@@ -3,6 +3,7 @@ package edu.ohiou.mfgresearch.schedule;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -88,115 +89,45 @@ public class JobShopProblem implements Problem {
 	}
 
 	/**
-	 * Schedule a solution by determining the completion time for each job
-	 * for each job in sequence
-	 * rule 1: 
+	 * Schedule a solution by determining the completion time for each job for each
+	 * job in sequence rule 1:
+	 * 
 	 * @param sched
+	 * @return
 	 */
-	public void setCompletionTimes(Solution s) {
-		// create the machine allocation
-		// each entry in the map with key as machine ID contains the job allocations for
-		// that machine
-		Map<Long, List<JobT>> machAlloc = new HashMap<>();
-		Map<Long, Double> lastCT = new HashMap<Long, Double>();
-		// get all job-operations in a list
-		List<JobT> jlist = IntStream.range(0, getNumberOfVariables())
-								   .mapToObj(i-> (JobT) s.getVariable(i))
-								   .collect(Collectors.toList());
-		for(Long mix: machines){
-			//get all job operations on this machine and schedule at machine ID mix
-			List<JobT> mal = jlist.stream()
-								  .filter(j->j.getAllOperation().get(0).getMachineID()==mix)
-								  .collect(Collectors.toList());
-			machAlloc.put(mix, mal);			
+	public Map<Long, JobT> setCompletionTimes(Solution s) {
+
+		Map<Long, Integer> gantt = new HashMap<Long, Integer>();
+		Map<Long, JobT> lastAlloctedJoPCT = new HashMap<Long, JobT>();
+
+		//initialize gantt
+		for(Long mix:machines){
+			gantt.put(mix, 0);
 		}
 
-		// schedule over horizon
-		int t = 0; // time counter
-		boolean hasJob = true;
-		// gantt chart
-		Map<Long, StringBuilder> gantt = new HashMap<Long, StringBuilder>();
-		Map<Long, Long> jobsProcessing = new HashMap<Long, Long>();
-		List<Integer> processedJob = new LinkedList<Integer>();
-		for (Long mix : machAlloc.keySet()) {
-			// make a new String builder starting with machine ID
-			gantt.put(mix, new StringBuilder().append("J").append(mix).append(","));
-		}
-
-		while (hasJob) {
-			t++; // increment time period by one
-			hasJob = false; // if there is no job found for any machine ID then turn it false
-			for (Long mix : machAlloc.keySet()) {
-				if (!machAlloc.get(mix).isEmpty()) {
-					JobT jop = machAlloc.get(mix).get(0);
-					hasJob = true; // has job to be scheduled
-					//if the job is already being processed in some other machine simply skip
-					if(jobsProcessing.containsKey(jop.jobID)){
-						if(jobsProcessing.get(jop.jobID) != mix) {
-							gantt.get(mix).append(" ,");
-							continue;
-						}
-					}				
-					// schedule the job
-					gantt.get(mix).append(jop.jobID) //.append(":").append(job.getOperation(0).getOperationID())
-								.append(",");	
-					//add in job-processing
-					if(!jobsProcessing.containsKey(jop.jobID)){
-						jobsProcessing.put(jop.jobID, jop.operations.get(0).getMachineID());
-					}
-					// decrease processing time by 1
-					jop.setProcessingTime(jop.processingTime - 1);
-					// delete the job if processing time (remaining) is 0
-					if (jop.processingTime == 0){
-						machAlloc.get(mix).remove(jop);
-						processedJob.add(Long.valueOf(jop.jobID).intValue());
-					}
-				}
+		for(int i=0; i < s.getNumberOfVariables(); i++){
+			//get the job-operation
+			JobT jop = (JobT) s.getVariable(i);
+			//get the machine to be allocated
+			Long machID = jop.getFirstOperation().getMachineID();
+			//get the completion time of last allocated job
+			Integer lastCT = 0;
+			if(lastAlloctedJoPCT.containsKey(jop.jobID)){
+				lastCT = (int) lastAlloctedJoPCT.get(jop.jobID).getCompletionTime();
+				lastAlloctedJoPCT.replace(jop.jobID, jop);
 			}
-			//remove processed jobs from jobs processing map
-			processedJob.forEach(j->jobsProcessing.remove(j));
+			else{
+				lastAlloctedJoPCT.put(jop.jobID, jop);
+			}
+			//calculate the starting time of the job
+			int startT = Math.max(lastCT, gantt.get(machID));
+			int ct = startT + (int) jop.getFirstOperation().getProcessingTime();
+			//update the completion time for the machine
+			gantt.replace(machID, ct);
+			//update the completion time
+			lastAlloctedJoPCT.get(jop.jobID).setCompletionTime(startT + jop.getFirstOperation().getProcessingTime());
 		}
-
-
-		// iterate over all Job Variables
-		// for (int i = 0; i < s.getNumberOfVariables(); i++) {
-		// 	// get the operation for this job
-		// 	JobT jop = (JobT) s.getVariable(i);
-		// 	Operation o = jop.operations.get(0);
-		// 	// create the machine if not already present or retirve it
-		// 	List<JobT> mal = new ArrayList<JobT>();
-		// 	if (!machAlloc.containsKey(o.getMachineID())) {
-		// 		machAlloc.put(o.getMachineID(), mal);
-		// 	} else {
-		// 		mal = machAlloc.get(o.getMachineID());
-		// 	}
-		// 	// set complettion time for the job operation
-		// 	if (mal.isEmpty()) {
-		// 		// if first job operation then completion time is equal to the processing time of the operation
-		// 		jop.setCompletionTime(o.getProcessingTime());
-		// 	} else {
-		// 		//calculate the starting time, it should be greater of last allocated job-operation in this machine or 
-		// 		//the completion time of the last allocated operation of this job (if there!)
-		// 		if(lastCT.containsKey(jop.jobID)){
-		// 			if (mal.get(mal.size() - 1).completionTime < lastCT.get(jop.jobID)){
-		// 				jop.setCompletionTime(lastCT.get(jop.jobID) + o.getProcessingTime());
-		// 			}
-		// 		}
-		// 		else{
-		// 			jop.setCompletionTime(mal.get(mal.size() - 1).completionTime + o.getProcessingTime());
-		// 		}
-		// 	}
-		// 	//update lastCT
-		// 	if(!lastCT.containsKey(jop.jobID)){
-		// 		lastCT.put(jop.jobID, jop.completionTime);
-		// 	}
-		// 	else{
-		// 		lastCT.replace(jop.jobID, jop.completionTime);
-		// 	}
-		// 	// scheule job at the machine
-		// 	mal.add(jop);
-		// }
-
+		return lastAlloctedJoPCT;
 	}
 
 	/**
@@ -206,130 +137,103 @@ public class JobShopProblem implements Problem {
 	 * @param s
 	 */
 	public void writeGantt(FileWriter fw, Solution s) {
-		// create the machine allocation
-		// each entry in the map with key as machine ID contains the job allocations for
-		// that machine
-		Map<Long, List<JobT>> machAlloc = new HashMap<>();
-		// get all job-operations in a list
-		List<JobT> jlist = IntStream.range(0, getNumberOfVariables())
-								   .mapToObj(i-> (JobT) s.getVariable(i))
-								   .collect(Collectors.toList());
-		for(Long mix: machines){
-			//get all job operations on this machine and schedule at machine ID mix
-			List<JobT> mal = jlist.stream()
-								  .filter(j->j.getAllOperation().get(0).getMachineID()==mix)
-								  .collect(Collectors.toList());
-			machAlloc.put(mix, mal);			
-			System.out.println("M"+mix+" -> "+mal.stream().map(j->"("+j.jobID+"-"+j.getAllOperation().get(0).getMachineID()+")").collect(Collectors.joining(",")));
+		
+		Map<Long, List<Integer>> gantt = new HashMap<Long, List<Integer>>();
+		Map<Long, JobT> lastAlloctedJoP = new HashMap<Long, JobT>();
+
+		//initialize gantt
+		for(Long mix:machines){
+			gantt.put(mix, new ArrayList<Integer>());
 		}
 
-
-
-		// iterate over all Job Variables
-		// for (int i = 0; i < s.getNumberOfVariables(); i++) {
-		// 	// get the operation for this job
-		// 	JobT jop = (JobT) s.getVariable(i).copy();
-		// 	Operation o = jop.operations.get(0);
-		// 	jop.setProcessingTime(o.getProcessingTime()); //set the processing time of the job as the processing time of the operation
-		// 	// create the machine if not already present or retirve it
-		// 	List<JobT> mal = new ArrayList<JobT>();
-		// 	if (!machAlloc.containsKey(o.getMachineID())) {
-		// 		machAlloc.put(o.getMachineID(), mal);
-		// 	} else {
-		// 		mal = machAlloc.get(o.getMachineID());
-		// 	}
-		// 	// scheule job at the machine
-		// 	mal.add(jop);
-		// }
-
-		// schedule over horizon
-		int t = 0; // time counter
-		boolean hasJob = true;
-		// gantt chart
-		Map<Long, StringBuilder> gantt = new HashMap<Long, StringBuilder>();
-		Map<Long, Long> jobsProcessing = new HashMap<Long, Long>();
-		List<Integer> processedJob = new LinkedList<Integer>();
-		for (Long mix : machAlloc.keySet()) {
-			// make a new String builder starting with machine ID
-			gantt.put(mix, new StringBuilder().append("J").append(mix).append(","));
-		}
-
-		while (hasJob) {
-			t++; // increment time period by one
-			hasJob = false; // if there is no job found for any machine ID then turn it false
-			for (Long mix : machAlloc.keySet()) {
-				if (!machAlloc.get(mix).isEmpty()) {
-					JobT jop = machAlloc.get(mix).get(0);
-					hasJob = true; // has job to be scheduled
-					//if the job is already being processed in some other machine simply skip
-					if(jobsProcessing.containsKey(jop.jobID)){
-						if(jobsProcessing.get(jop.jobID) != mix) {
-							gantt.get(mix).append(" ,");
-							continue;
-						}
-					}				
-					// schedule the job
-					gantt.get(mix).append(jop.jobID) //.append(":").append(job.getOperation(0).getOperationID())
-								  .append(",");	
-					//add in job-processing
-					if(!jobsProcessing.containsKey(jop.jobID)){
-						 jobsProcessing.put(jop.jobID, jop.operations.get(0).getMachineID());
-					}
-					// decrease processing time by 1
-					jop.setProcessingTime(jop.processingTime - 1);
-					// delete the job if processing time (remaining) is 0
-					if (jop.processingTime == 0){
-						machAlloc.get(mix).remove(jop);
-						processedJob.add(Long.valueOf(jop.jobID).intValue());
-					}
-				}
+		for(int i=0; i < s.getNumberOfVariables(); i++){
+			//get the job-operation
+			JobT jop = (JobT) s.getVariable(i);
+			//get the machine to be allocated
+			Long machID = jop.getFirstOperation().getMachineID();
+			//get the completion time of last allocated job
+			Integer lastCT = 0;
+			if(lastAlloctedJoP.containsKey(jop.jobID)){
+				lastCT = (int) lastAlloctedJoP.get(jop.jobID).getCompletionTime();
+				lastAlloctedJoP.replace(jop.jobID, jop);
 			}
-			//remove processed jobs from jobs processing map
-			processedJob.forEach(j->jobsProcessing.remove(j));
+			else{
+				lastAlloctedJoP.put(jop.jobID, jop);
+			}
+			//calculate the starting time of the job
+			int startT = Math.max(lastCT, gantt.get(machID).size()-1);
+			while(gantt.get(machID).size()<=startT){
+				gantt.get(machID).add(0);
+			}
+			//fill up the list 
+			for(int j=0; j<jop.getFirstOperation().getProcessingTime(); j++){
+				gantt.get(machID).add(Long.valueOf(jop.jobID).intValue());
+			}
+			//update the completion time
+			lastAlloctedJoP.get(jop.jobID).setCompletionTime(startT + jop.getFirstOperation().getProcessingTime());
 		}
 
-		// write
-		IntStream.range(0, t+1).forEach(i->{
+		//write
+		int t = 0;
+		//get the longest machince allocation as the limit in the horizon
+		for(Long k: gantt.keySet()){
+			if(gantt.get(k).size() > t) t = gantt.get(k).size();
+		}
+		for(int i=0; i< t; i++){
 			try {
-				fw.append(String.valueOf(i)).append(",");
+				if(i==0){
+					fw.append("t->,");
+				}
+				else{
+					fw.append(String.valueOf(i)).append(",");
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		});
+		}
 		try {
 			fw.append("\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		gantt.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEachOrdered(x -> {
+
+		for(Long mix:machines){
+			List<Integer> maloc = gantt.get(mix);
+			for(int i=0; i< t; i++){
+				try {
+					if(i==0){
+						fw.append("M").append(mix.toString()).append(",");
+					}
+					else{
+						if(maloc.size()>i){
+							fw.append(String.valueOf(maloc.get(i))).append(",");
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			try {
-				fw.append(x.getValue());
 				fw.append("\n");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		});
+		}
 
-	}
+	 }
 
 	@Override
 	public void evaluate(Solution solution) {	
 		//first calculate the completion time for each job-operation in the solution
-		setCompletionTimes(solution);
-		//update global job completion time (first clear all completion times)
-		jobs.forEach(j->j.setCompletionTime(0.0));
-		for(int i=0; i<solution.getNumberOfVariables(); i++){
-			//get the job operation 
-			JobT jop = (JobT) solution.getVariable(i);
-			//get the job from job list
-			JobT job = jobs.stream().filter(j->j.getJobID()==jop.getJobID()).findFirst().get();
-			//update the cumulative completion time to the global job
-			if(job.getCompletionTime()<jop.completionTime){
-				job.setCompletionTime(jop.completionTime);
-			}
-		}
+		Map<Long, JobT> jobCT = setCompletionTimes(solution);
 		//convert List<JobT> to List<Job>
-		List<Job> jlist = jobs.stream().map(ii -> (Job) ii).collect(Collectors.toList());		
+		List<Job> jlist = jobs.stream().map(ii -> (Job) ii).collect(Collectors.toList());
+		//update completion time to joblist
+		for(Job job: jlist){
+			job.setCompletionTime(jobCT.get(job.jobID).completionTime);
+			System.out.println("CT->"+job.toString());
+		}	
+		//update solution objective	
 		for (int i = 0; i < measures.size(); i++) {
 			solution.setObjective(i, measures.get(i).evaluate(jlist));
 		}

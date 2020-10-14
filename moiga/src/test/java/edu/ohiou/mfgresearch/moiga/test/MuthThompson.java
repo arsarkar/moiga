@@ -26,27 +26,26 @@ public class MuthThompson {
     public void initialize() throws Exception {
         prob = DataGenerator.readTaillardToJobShopWithDD(
                 getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.txt").getFile(),
-                Omni.of(PerformanceMeasures.NUM_TARDY_JOB).toList(), 0.4, 0.8);
+                Omni.of(PerformanceMeasures.NUM_TARDY_JOB, 
+                        PerformanceMeasures.MAKESPAN, 
+                        PerformanceMeasures.TOTAL_TARDINESS, 
+                        PerformanceMeasures.AVERAGE_FLOW_TIME).toList(), 0.4, 0.8);
     }
 
     @Test
     public void testNewSolution() throws IOException {
         Solution s = prob.newSolution();
-        //prob.evaluate(s);
+        prob.evaluate(s);
         // for(int i=0; i<s.getNumberOfVariables(); i++){
         //     System.out.println(s.getVariable(i).toString());
         // }
-        // List<Job> jlist = prob.getJobs().stream().map(ii -> (Job) ii).collect(Collectors.toList());	
+        List<Job> jlist = prob.getJobs().stream().map(ii -> (Job) ii).collect(Collectors.toList());	
+        jlist.forEach(j->System.out.println("J" + j.jobID + " ct: " + j.getCompletionTime()));
+        System.out.println("Num Tardy = " + s.getObjective(0));	
+        System.out.println("makespan = " + s.getObjective(1));	
+        System.out.println("Total tardiness = " + s.getObjective(2));	
+        System.out.println("Avg Flow = " + s.getObjective(3));
 
-        // jlist.forEach(j->System.out.println("J" + j.jobID + " ct: " + j.getCompletionTime()));
-
-        // System.out.println("Num Tardy = " + PerformanceMeasures.NUM_TARDY_JOB.evaluate(jlist));	
-        // System.out.println("makespan = " + PerformanceMeasures.MAKESPAN.evaluate(jlist));	
-        // System.out.println("Total tardiness = " + PerformanceMeasures.TOTAL_TARDINESS.evaluate(jlist));	
-        // System.out.println("Avg Flow = " + PerformanceMeasures.AVERAGE_FLOW_TIME.evaluate(jlist));
-        for(int i=0; i<s.getNumberOfVariables(); i++){
-            System.out.println(s.getVariable(i).toString());
-        }
         FileWriter fw = new FileWriter(getClass().getResource("/META-INF/jobshop/gantt1.csv").getFile());
         prob.writeGantt(fw, s);
         fw.flush();
