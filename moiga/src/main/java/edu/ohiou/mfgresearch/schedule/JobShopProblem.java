@@ -3,21 +3,16 @@ package edu.ohiou.mfgresearch.schedule;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import javax.print.attribute.standard.JobPriority;
 
 import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
-import org.moeaframework.core.Variable;
 
 import edu.ohiou.mfgresearch.schedule.JobT.Operation;
 
@@ -63,7 +58,7 @@ public class JobShopProblem implements Problem {
 
 	@Override
 	public int getNumberOfVariables() {
-		return jobs.size() * machines.size();
+		return jobs.stream().map(j->j.getTaskCount()).reduce(0, (a,b)->a+b);
 	}
 
 	@Override
@@ -88,6 +83,10 @@ public class JobShopProblem implements Problem {
 		return jobs.stream().filter(j->j.jobID == jobID).findFirst().get();
 	}
 
+	public void setPerformanceMeasures(List<PerformanceMeasures> measures){
+		this.measures = measures;
+	}
+
 	/**
 	 * Schedule a solution by determining the completion time for each job for each
 	 * job in sequence rule 1:
@@ -95,7 +94,7 @@ public class JobShopProblem implements Problem {
 	 * @param sched
 	 * @return
 	 */
-	public Map<Long, JobT> setCompletionTimes(Solution s) {
+	public Map<Long, JobT> setCompletionTimes(List<JobT> s) {
 
 		Map<Long, Integer> gantt = new HashMap<Long, Integer>();
 		Map<Long, JobT> lastAlloctedJoPCT = new HashMap<Long, JobT>();
@@ -105,9 +104,9 @@ public class JobShopProblem implements Problem {
 			gantt.put(mix, 0);
 		}
 
-		for(int i=0; i < s.getNumberOfVariables(); i++){
+		for(int i=0; i < s.size(); i++){
 			//get the job-operation
-			JobT jop = (JobT) s.getVariable(i);
+			JobT jop = (JobT) s.get(i);
 			//get the machine to be allocated
 			Long machID = jop.getFirstOperation().getMachineID();
 			//get the completion time of last allocated job
@@ -224,14 +223,17 @@ public class JobShopProblem implements Problem {
 
 	@Override
 	public void evaluate(Solution solution) {	
+		List<JobT> jops = IntStream.range(0, solution.getNumberOfVariables())
+								   .mapToObj(i->(JobT) solution.getVariable(i))
+								   .collect(Collectors.toList());
 		//first calculate the completion time for each job-operation in the solution
-		Map<Long, JobT> jobCT = setCompletionTimes(solution);
+		Map<Long, JobT> jobCT = setCompletionTimes(jops);
 		//convert List<JobT> to List<Job>
 		List<Job> jlist = jobs.stream().map(ii -> (Job) ii).collect(Collectors.toList());
 		//update completion time to joblist
 		for(Job job: jlist){
 			job.setCompletionTime(jobCT.get(job.jobID).completionTime);
-			System.out.println("CT->"+job.toString());
+			// System.out.println("CT->"+job.toString());
 		}	
 		//update solution objective	
 		for (int i = 0; i < measures.size(); i++) {
@@ -242,42 +244,75 @@ public class JobShopProblem implements Problem {
 	@Override
 	public Solution newSolution() {
 		Solution ob = new Solution(this.getNumberOfVariables(), this.getNumberOfObjectives());
-		List<JobT> jopBucket = new LinkedList<JobT>();
-		Map<Long, Long> opSeqed = new HashMap<Long, Long>(); 	
-		//add initial job operations to bucket
-		jobs.forEach(j -> {
-			jopBucket.add(j.generateJobOperation(1L));
-			opSeqed.put(j.jobID, 1L);	
-		});
-		int ix = -1;
-		while(ix < getNumberOfVariables()-1){
-			//first put available job-operations in bucket
-			for(JobT job: jobs){
-				if(!jopBucket.stream().anyMatch(j->j.jobID == job.jobID)){
-					if(opSeqed.get(job.jobID) < job.getTaskCount()){
-						jopBucket.add(job.generateJobOperation(opSeqed.get(job.jobID) + 1));
-						opSeqed.replace(job.jobID, opSeqed.get(job.jobID)+1);
-					}
-				}
-			}
-			//shuffle the bucket and pick one
-			PRNG.shuffle(jopBucket);
-			ob.setVariable(++ix, jopBucket.get(0));
-			jopBucket.remove(0);
-		}
 
-		//get all job and operation keys
-		// List<JobT> jops = new LinkedList<JobT>();
-		// for(JobT j: jobs){
-		// 	 jops.addAll(j.generateJobOperations());
-		// }
-		// PRNG.shuffle(jops);
-		// int ix = 0;
-		// for(JobT jox: jops){
-		// 	ob.setVariable(ix, jox);
-		// 	ix += 1;
-		// }
+		//add each jobID for as many operations it has
+		List<Long> jixs = new LinkedList<Long>();
+		for(JobT j: jobs){
+			 for(Operation o : j.getAllOperation()){
+				 jixs.add(j.jobID);
+			 }
+		}
+		//shuffle the list
+		PRNG.shuffle(jixs);
+
+		//assign the operations to this job
+		List<JobT> jops = assignOperations(jixs);
+
+		int ix = 0;
+		for(JobT jop: jops){
+			ob.setVariable(ix, jop);
+			ix += 1;
+		}
 		return ob;
+	}
+
+	/**
+	 * Assign operations to a candidate (permutation based representation)
+	 * @param List of jobID
+	 * @return
+	 */
+	public List<JobT> assignOperations(List<Long> jids) {
+		Map<Long, Integer> lastOperationforJob = new HashMap<Long, Integer>();
+		List<JobT> jops = new ArrayList<JobT>();
+		for(Long jid:jids){
+			//get the job from global
+			JobT job = getJob(jid);
+			//create new job
+			JobT nJob = new JobT(jid);
+			if(lastOperationforJob.containsKey(jid)){
+				//add the next operation of the last operation added
+				nJob.addOperation(job.getOperation(lastOperationforJob.get(jid)+1).getMachineID(), 
+								  job.getOperation(lastOperationforJob.get(jid)+1).getProcessingTime());				  
+				lastOperationforJob.replace(jid, lastOperationforJob.get(jid)+1); //increment the operation index
+			}
+			else{
+				//add the first operation
+				nJob.addOperation(job.getOperation(0).getMachineID(), 
+								  job.getOperation(0).getProcessingTime());
+				lastOperationforJob.put(jid, 0); 
+			}
+			jops.add(nJob);
+		}
+		return jops;
+	}
+
+	/**
+	 * Write solution in format (J1-M2), (J2-M1), ...
+	 * @param s
+	 * @return
+	 */
+	public String writeSolution(Solution s){
+		StringBuilder sb = new StringBuilder();
+		for(int i=0; i < s.getNumberOfVariables(); i++){
+			JobT j = (JobT) s.getVariable(i);
+			sb.append("(J")
+			  .append(j.jobID)
+			  .append("-M")
+			  .append(j.getFirstOperation().getMachineID())
+			  .append("), ");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		return sb.toString();
 	}
 
 	public void close() {

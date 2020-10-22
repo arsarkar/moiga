@@ -1,9 +1,12 @@
 package edu.ohiou.mfgresearch.moiga.test;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
@@ -28,7 +31,9 @@ import edu.ohiou.mfgresearch.lambda.Omni;
 import edu.ohiou.mfgresearch.moiga.DataGenerator;
 import edu.ohiou.mfgresearch.operators.GPMXCrossover;
 import edu.ohiou.mfgresearch.operators.SwapMutation;
+import edu.ohiou.mfgresearch.schedule.Job;
 import edu.ohiou.mfgresearch.schedule.JobShopProblem;
+import edu.ohiou.mfgresearch.schedule.JobT;
 import edu.ohiou.mfgresearch.schedule.PerformanceMeasures;
 import edu.ohiou.mfgresearch.solver.algorithm.FuzzyNSGAProvider;
 
@@ -80,6 +85,32 @@ public class MOEAFunction {
         });
     }
 
+    @Test
+    public void testNewSolution() throws Exception {
+        List<JobT> jobs = DataGenerator.readTaillardToJobShopWithDD(
+                            getClass().getResource("/META-INF/jobshop/google_3m.txt").getFile());
+        JobShopProblem  prob = new JobShopProblem(jobs, Omni.of(PerformanceMeasures.NUM_TARDY_JOB, 
+                                                                PerformanceMeasures.MAKESPAN, 
+                                                                PerformanceMeasures.TOTAL_TARDINESS, 
+                                                                PerformanceMeasures.AVERAGE_FLOW_TIME).toList());
+        Solution s = prob.newSolution();
+        for(int i=0; i<s.getNumberOfVariables(); i++){
+            System.out.println(s.getVariable(i).toString());
+        }
+        prob.evaluate(s);
+        List<Job> jlist = prob.getJobs().stream().map(ii -> (Job) ii).collect(Collectors.toList());	
+        jlist.forEach(j->System.out.println("J" + j.jobID + " ct: " + j.getCompletionTime()));
+        System.out.println("Num Tardy = " + s.getObjective(0));	
+        System.out.println("makespan = " + s.getObjective(1));	
+        System.out.println("Total tardiness = " + s.getObjective(2));	
+        System.out.println("Avg Flow = " + s.getObjective(3));
+
+        FileWriter fw = new FileWriter(getClass().getResource("/META-INF/jobshop/gantt1.csv").getFile());
+        prob.writeGantt(fw, s);
+        fw.flush();
+        fw.close();
+    }
+
     /**
      * Result
      * muth_thompson_6_6.csv
@@ -96,11 +127,9 @@ public class MOEAFunction {
 
         PerformanceMeasures pm = PerformanceMeasures.NUM_TARDY_JOB;
         Fuzzyficator fuzzB = new Fuzzyficator(new FuzzyMembershipT(6, 0, 0, 0));
-
-        JobShopProblem prob = DataGenerator.readTaillardToJobShopWithDD(
-            getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.csv").getFile(),
-            Omni.of(pm).toList(), 
-                    0.4, 0.8);
+        List<JobT> jobs =DataGenerator.readTaillardToJobShopWithDD(
+            getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.csv").getFile());
+        JobShopProblem prob = new JobShopProblem(jobs, Omni.of(pm).toList());
         OperatorFactory.getInstance().addProvider(new OperatorProvider() {
             public String getMutationHint(final Problem problem) {
                 return null;
@@ -112,9 +141,9 @@ public class MOEAFunction {
 
             public Variation getVariation(final String name, final Properties properties, final Problem problem) {
                 if (name.equalsIgnoreCase("MyCrossover")) {
-                    return new GPMXCrossover(prob.getNumberOfJobs());
+                    return new GPMXCrossover(prob);
                 } else if (name.equalsIgnoreCase("MyMutation")) {
-                    return new SwapMutation(0.1);
+                    return new SwapMutation(prob);
                 }
                 // No match, return null
                 return null;
@@ -150,9 +179,10 @@ public class MOEAFunction {
 
     @Test
     public void MOEAFNSGAJS1() throws Exception {
-        JobShopProblem prob = DataGenerator.readTaillardToJobShopWithDD(
-            getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.csv").getFile(),
-            Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.AVERAGE_FLOW_TIME).toList(), 0.4, 0.8);
+        List<JobT> jobs = DataGenerator.readTaillardToJobShopWithDD(
+            getClass().getResource("/META-INF/jobshop/muth_thompson_6_6.csv").getFile());
+        JobShopProblem prob = new JobShopProblem(jobs, 
+            Omni.of(PerformanceMeasures.NUM_TARDY_JOB, PerformanceMeasures.AVERAGE_FLOW_TIME).toList());
         OperatorFactory.getInstance().addProvider(new OperatorProvider() {
             public String getMutationHint(final Problem problem) {
                 return null;
@@ -164,9 +194,9 @@ public class MOEAFunction {
 
             public Variation getVariation(final String name, final Properties properties, final Problem problem) {
                 if (name.equalsIgnoreCase("MyCrossover")) {
-                    return new GPMXCrossover(prob.getNumberOfJobs());
+                    return new GPMXCrossover(prob);
                 } else if (name.equalsIgnoreCase("MyMutation")) {
-                    return new SwapMutation(0.1);
+                    return new SwapMutation(prob);
                 }
                 // No match, return null
                 return null;

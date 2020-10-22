@@ -14,7 +14,11 @@ public class FuzzyComparator implements DominanceComparator, Serializable {
 
     private static final long serialVersionUID = 1L;
     private List<Fuzzyficator> fuzzyficators;
-    private BinaryOperator<Double> aggregator;    
+    private BinaryOperator<Double> aggregator;   
+
+    public FuzzyComparator(List<Fuzzyficator> fuzzyficators) {
+        this.fuzzyficators = fuzzyficators;
+    } 
 
     public FuzzyComparator(List<Fuzzyficator> fuzzyficators, BinaryOperator<Double> aggregator) {
         this.fuzzyficators = fuzzyficators;
@@ -23,17 +27,23 @@ public class FuzzyComparator implements DominanceComparator, Serializable {
 
     @Override
     public int compare(Solution solution1, Solution solution2) {
-
-        Double value1 = IntStream.range(0, solution1.getNumberOfObjectives())
-                                    .boxed()
-                                    .map(i->fuzzyficators.get(i).apply(solution1.getObjective(i))) //fuzzyfy the solution
-                                    .reduce(aggregator) //add all fuzzy satisfaction
-                                    .get();
-        Double value2 = IntStream.range(0, solution2.getNumberOfObjectives())
-                                    .boxed()
-                                    .map(i->fuzzyficators.get(i).apply(solution2.getObjective(i))) //fuzzyfy the solution
-                                    .reduce(aggregator) //add all fuzzy satisfaction
-                                    .get();
+        Double value1, value2;
+        if(aggregator == null){
+            value1 = fuzzyficators.get(0).apply(solution1.getObjective(0));
+            value2 = fuzzyficators.get(0).apply(solution2.getObjective(0));
+        }
+        else{
+            value1 = IntStream.range(0, solution1.getNumberOfObjectives())
+                                        .boxed()
+                                        .map(i->fuzzyficators.get(i).apply(solution1.getObjective(i))) //fuzzyfy the solution
+                                        .reduce(aggregator) //add all fuzzy satisfaction
+                                        .get();
+            value2 = IntStream.range(0, solution2.getNumberOfObjectives())
+                                        .boxed()
+                                        .map(i->fuzzyficators.get(i).apply(solution2.getObjective(i))) //fuzzyfy the solution
+                                        .reduce(aggregator) //add all fuzzy satisfaction
+                                        .get();
+        }
 
         if (value1 == value2) {
 			return 0;

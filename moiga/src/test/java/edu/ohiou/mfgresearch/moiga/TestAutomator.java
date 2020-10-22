@@ -24,6 +24,7 @@ import org.uncommons.watchmaker.framework.termination.GenerationCount;
 import edu.ohiou.mfgresearch.operators.PMXCrossover;
 import edu.ohiou.mfgresearch.operators.SwapMutation;
 import edu.ohiou.mfgresearch.schedule.Job;
+import edu.ohiou.mfgresearch.schedule.JobShopProblem;
 import edu.ohiou.mfgresearch.schedule.PerformanceMeasures;
 import edu.ohiou.mfgresearch.schedule.ScheduleProblem;
 import edu.ohiou.mfgresearch.solver.ParetoFinder;
@@ -83,7 +84,7 @@ public class TestAutomator
 	}
 	public void test() throws Exception
 	{
-		this.test(Stream.of(new PMXCrossover(), new SwapMutation(0.5)).collect(Collectors.toList()));
+		this.test(Stream.of(new PMXCrossover(), new SwapMutation((JobShopProblem) prob)).collect(Collectors.toList()));
 	}
 
 	public void test(List<Variation> operators) throws Exception

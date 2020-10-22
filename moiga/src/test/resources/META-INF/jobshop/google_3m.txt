@@ -1,0 +1,10 @@
+Nb of jobs, Nb of Machines, Time seed, Machine seed, Upper bound, Lower bound
+3,3,840612802,398197754,1231,1005
+Times
+ 3 2 2
+ 2 1 4
+ 4 3
+Machines
+ 1 2 3 10
+ 1 3 2 10
+ 2 3 10 

@@ -87,7 +87,8 @@ public class FuzzyNSGA extends AbstractEvolutionaryAlgorithm implements EpsilonB
 																   );
 			System.out.print("\nGeneration # " + numGeneration++);
 			System.out.print(" Best candiates = ");
-			getResult().forEach(s -> System.out.print("(" + s.getObjective(0) + ", " + fuzzyficators.get(0).apply(s.getObjective(0))  + ")"));
+			getResult().forEach(s -> System.out.print("[(" + s.getObjective(0) + ", " + fuzzyficators.get(0).apply(s.getObjective(0))  + "), "
+													 +"(" + s.getObjective(1) + ", " + fuzzyficators.get(1).apply(s.getObjective(1))  + ")]"));
 			System.out.print("\n");
 
 			// for (int i = 0; i < population.size(); i++) {

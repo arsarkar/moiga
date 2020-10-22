@@ -1,15 +1,33 @@
 package edu.ohiou.mfgresearch.operators;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
 
+import edu.ohiou.mfgresearch.schedule.JobShopProblem;
 import edu.ohiou.mfgresearch.schedule.JobT;
 
+/**
+ * Generalized Order Crossover
+ * assemble one offspring from two parental chromosomes
+ * (donator and receiver). In both techniques a substring
+ * is chosen from the donating chromosome. Then all genes 
+ * of the substring are deleted with respect to their index 
+ * of occurrence in the receiving chromosome.
+ * GOX implants the substring into the receiver at the 
+ * position where the first gene of the substring has occured 
+ * (before deletion) in the receiver.
+ */
 public class GOXCrossover implements Variation {
-	int jobCount;
+	JobShopProblem problem;
 
-	public GOXCrossover(int jobCnt) {
-		this.jobCount = jobCnt;
+	public GOXCrossover(JobShopProblem prob) {
+		this.problem = prob;
 	}
 
 	@Override
@@ -27,48 +45,71 @@ public class GOXCrossover implements Variation {
 
 	Solution getOffspring(Solution p1, Solution p2) {
 		int size = p1.getNumberOfVariables();
-		JobT[] parent1 = new JobT[size];
-		JobT[] parent2 = new JobT[size];
-		int ind1[] = new int[size];
-		int ind2[] = new int[size];
-		int cnt1[] = new int[this.jobCount];
-		int cnt2[] = new int[this.jobCount];
-
-		for (int i = 0; i < size; i++) {
-			parent1[i] = (JobT) p1.getVariable(i);
-			parent2[i] = (JobT) p2.getVariable(i);
-			ind1[i] = cnt1[(int) parent1[i].jobID]++;
-			ind2[i] = cnt2[(int) parent2[i].jobID]++;
-		}
 
 		// 1/3*size <= cut length <= 1/2*size
-		int cutLen = (int) (0.33 * size + Math.random() * 0.17 * size);
-		int ind = (int) (Math.random() * size);
+		int cutLen = (int) Math.abs(0.33 * size + Math.random() * 0.17 * size);
+		//start position of substring (should be consecutive)
+		int ind = (int) (Math.random() * (size-cutLen));
 		// System.out.println(ind+"----"+cutLen);
-		Solution offspring = new Solution(p1.getNumberOfVariables(), p1.getNumberOfObjectives());
-		int indf = 0;
+
+		List<JobT> subString = new ArrayList<JobT>();
+		//get the substring s1 from donating parent (p1)
 		for (int k = ind; k < ind + cutLen; k++) {
-			int ktemp = (k % size == 0) ? size - 1 : k % size;
-			for (int j = 0; j < size; j++)
-				if (ind2[j] == ind1[k % size] && parent2[j].jobID == parent1[k % size].jobID) {
-					ind2[j] = -1;
-					if (ind == k)
-						indf = j + 1;
+			subString.add((JobT) p1.getVariable(k));
+		}
+		//System.out.println("P1sub -> " + subString.stream().map(j->String.valueOf(j.jobID)).collect(Collectors.joining(",")));
+		//detect the position for insertion in receiving parent (p2)
+		//that is the position where the first gene of the substring has occured
+		//first get the reciving solution in a list
+		List<JobT> p2List = IntStream.range(0, size)
+									 .mapToObj(i->(JobT) p2.getVariable(i))
+									 .collect(Collectors.toList());
+
+		int insertPosition = 0; 
+		//rememeber the insert position for unremoved receiving solution
+		for(int k=0; k<p2List.size(); k++){
+			if(p2List.get(k).jobID == subString.get(0).jobID &&
+				p2List.get(k).getFirstOperation().getMachineID() == subString.get(0).getFirstOperation().getMachineID()){
+					insertPosition = k;
 					break;
 				}
 		}
-		for (int k = 0; k < cutLen; k++) {
-			int ktemp = (k + indf) % size;
-			offspring.setVariable(ktemp, parent1[(k + ind) % size]);
+		
+		//flag all genes to be removed from receiving parent (p2) which is in the subString
+		List<Integer> delPos = new ArrayList<Integer>();
+		for(int j=0; j<subString.size(); j++){
+			for(int k=0; k<p2List.size(); k++){
+				if(p2List.get(k).jobID == subString.get(j).jobID &&
+					p2List.get(k).getFirstOperation().getMachineID() == subString.get(j).getFirstOperation().getMachineID()){
+					delPos.add(k);
+					break;
+				}
+			}
 		}
-		// for(int i=0;i<offspring.getNumberOfVariables();i++)
-		// System.out.println(offspring.getVariable(i));
-		int k = 0;
+
+		//make a new solution from the receiving gene by inserting the substring at insert position
+		//and deleting all genes from the delpos
+		List<JobT> p2Clone = new ArrayList<JobT>();
+		for(int k=0; k<p2List.size(); k++){
+			//if k is in delPos list then don't add
+			if(!delPos.contains(k) || k == insertPosition){
+				//if this is the insert position then add the entire substring
+				if(k == insertPosition){
+					p2Clone.addAll(subString);
+				}
+				else{
+					p2Clone.add(p2List.get(k));
+				}
+			}
+		}
+
+		//reassign the operations
+		List<Long> jids = p2Clone.stream().map(j->j.jobID).collect(Collectors.toList());
+		p2Clone = problem.assignOperations(jids); 
+
+		Solution offspring = new Solution(p1.getNumberOfVariables(), p1.getNumberOfObjectives());
 		for (int i = 0; i < offspring.getNumberOfVariables(); i++) {
-			while (ind2[k % size] == -1)
-				k++;
-			if (offspring.getVariable(i) == null)
-				offspring.setVariable(i, parent2[k++ % size]);
+			offspring.setVariable(i, p2Clone.get(i));
 		}
 		return offspring;
 	}

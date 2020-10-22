@@ -1,184 +1,144 @@
 package edu.ohiou.mfgresearch.schedule;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.moeaframework.core.Solution;
 
-public enum ScheduleHeuristic
-{
-    FCFS(1)
-    {
-    	public List<JobT> evaluate(List<JobT> jobs,int jcnt,int mcnt)
-    	{
-    		
-    		double mtime[]=new double[mcnt];
-            for(JobT jid:jobs)
-            {
-            	double prev=0;
-            	for(int i=0;i<jid.getTaskCount();i++)
-            	{
-            		// if(mtime[jid.task[i][0]]<prev)
-            		// 	mtime[jid.task[i][0]]=prev;
-            		// mtime[jid.task[i][0]]+=jid.task[i][1];
-            		// prev=mtime[jid.task[i][0]];
-            	}  
-            	for(int k=0;k<mcnt;k++)
-            		System.out.print(mtime[k]+" ");
-            	System.out.println();
-            	jid.completionTime=Arrays.stream(mtime).max().getAsDouble();
-            }
-            return jobs;
-    	}
-    },
+import edu.ohiou.mfgresearch.schedule.JobT.Operation;
+import jmetal.core.Operator;
+
+public class ScheduleHeuristic implements Iterator<JobT> {
+
+	public enum Heuristic {
+		SPT, // Shortest processing time
+		FOR, // Fewest remaining number of operation
+		EDD, // Earliest due date
+		LDD, // Latest due date
+		LRP, // Least remaining processing time
+		LARP, // Least average remaining processing time
+		LPT, // LPT – largest processing time
+		MOR, // Most remaining number of operation
+		MRP, // Most remaining processing time
+		MARP, // Most average remaining processing time
+		LST, //least slack time
+		LARST, //least average remaining slack time
+		HOLD // Do not process any job
+	}
+
+	List<JobT> jobList = new ArrayList<JobT>();
+	List<JobT> archiveJobs;
+	List<Heuristic> schemes = new ArrayList<Heuristic>();
+	int counter = -1;
+
+	public ScheduleHeuristic(List<JobT> jops) {
+		jobList = jops;
+	}
+
+	/**
+	 * Add heuristic scheme
+	 * more than one scheme will be applied repeatedly
+	 * @param h
+	 */
+	public void addScheme(Heuristic h){
+		schemes.add(h);
+	}
+
+	@Override
+	public boolean hasNext() {
+		if(!jobList.isEmpty()){
+			counter += 1; //increment scheme counter
+			//backup original job list because jobs are going to be removed from jobList
+			if(archiveJobs == null){
+				archiveJobs = jobList.stream().map(j-> (JobT) j.copy()).collect(Collectors.toList());
+			}
+			return true;
+		}
+		else{
+			counter = 0; //reset scheme counter
+			//populate jobList from archive to reset this iterable
+			jobList = archiveJobs.stream().map(j-> (JobT) j.copy()).collect(Collectors.toList());
+			archiveJobs = null;
+			return false;			
+		}
+	}
+
+	@Override
+	public JobT next() {
+		//for hold heuristic do not schedule any job, skip
+		if(schemes.get(counter%schemes.size()) == Heuristic.HOLD){
+			return null;
+		}
+		jobList.sort(new Comparator<JobT>(){
+			@Override
+			public int compare(JobT o1, JobT o2) {
+
+				Function<JobT, Double> func = null;
+				switch (schemes.get(counter%schemes.size())) {
+					case SPT:
+						func = j->j.processingTime;
+						break;
+					case FOR:
+						func = j->(double) j.getTaskCount();
+						break;
+					case EDD:
+						func = j->(double) j.getDueDate();
+						break;
+					case LDD:
+						func = j->(double) (-1) * j.getDueDate();
+						break;
+					case LRP:
+						func = j->(double) j.getProcessingTime();
+						break;
+					case LARP:
+						func = j->(double) j.getProcessingTime()/j.getTaskCount();
+						break;
+					case LPT:
+						func = j->(double) -1 * j.processingTime;
+						break;
+					case MOR:
+						func = j->(double) -1 * j.getTaskCount();
+						break;
+					case MRP:
+						func = j->(double) -1 * j.getProcessingTime();
+						break;
+					case MARP:
+						func = j->(double) -1 * j.getProcessingTime()/j.getTaskCount();
+						break;
+					case LST:
+						func = j->(double) j.dueDate - j.processingTime;
+						break;
+					case LARST:
+						func = j->(double) (j.dueDate - j.processingTime)/j.getTaskCount();
+						break;
+					default:
+						break;
+				}
 	
-	SPT(2)
-    {
-    	public List<JobT> evaluate(List<JobT> jobs,int jcnt,int mcnt)
-    	{
-            double mtime[]=new double[mcnt];
-            Collections.sort(jobs,new Comparator<JobT>(){
-
-				@Override
-				public int compare(JobT o1, JobT o2) {
-					if(o1.processingTime>o2.processingTime)
-						return 1;
-					else if(o1.processingTime<o2.processingTime)
-						return -1;
+				if (func.apply(o1) == func.apply(o2)) {
 					return 0;
+				} else if (func.apply(o1) < func.apply(o2)) {
+					return -1;
 				}
-            	
-            	
-            });
-            for(JobT jid:jobs)
-            {
-            	double prev=0;
-            	for(int i=0;i<jid.getTaskCount();i++)
-            	{
-            		// if(mtime[jid.task[i][0]]<prev)
-            		// 	mtime[jid.task[i][0]]=prev;
-            		// mtime[jid.task[i][0]]+=jid.task[i][1];
-            		// prev=mtime[jid.task[i][0]];
-            	}  
-            	for(int k=0;k<mcnt;k++)
-            		System.out.print(mtime[k]+" ");
-        		System.out.println();
-            	jid.completionTime=Arrays.stream(mtime).max().getAsDouble();
-            }
-//            jobs.forEach(i->System.out.println(i));
-            // Solution temp=new Solution(jobs.size(),5);
-            // for(int i=0;i<jobs.size();i++)
-            // {
-            // 	temp.setVariable(i,jobs.get(i).copy());
-            // 	jobs.get(i).completionTime=0.0;
-            // }
-            return jobs;
-    	}
-    },
-    LWKR(3)
-    {
-    	public List<JobT> evaluate(List<JobT> jobs,int jcnt,int mcnt)
-    	{
-            int tcnt[]=new int[jcnt];
-            double mtime[]=new double[mcnt];
-            double lmt[]=new double[jcnt];
-            int ttemp[]=null;
-            boolean flag=true;
-            System.out.println(jobs+" "+jcnt);
-            while(flag)
-            {
-            	flag=false;
-            	double temp=Integer.MAX_VALUE;
-            	JobT jid=null;
-            	for(int i=0;i<jcnt;i++)
-            		if(tcnt[(int) jobs.get(i).jobID]<jobs.get(i).getTaskCount() )
-            		{	
-            			double wkr=0;
-            			flag=true;
-            			double wtemp[]=new double[mcnt];
-            			for(int k=tcnt[(int) jobs.get(i).jobID];k<jobs.get(i).getTaskCount();k++)
-            				// wtemp[jobs.get(i).task[k][0]]+=jobs.get(i).task[k][1];
-            			wkr=Arrays.stream(wtemp).max().getAsDouble();
-            			if(temp>wkr)
-            			{
-	            			jid=jobs.get(i);
-	            			temp=wkr;
-            			}
-            		}
-            	if(jid==null)
-            		break;
-            	// ttemp=jid.task[tcnt[(int)jid.jobID]];
-            	
-            	if(mtime[ttemp[0]]<lmt[(int) jid.jobID])
-            		mtime[ttemp[0]]=lmt[(int) jid.jobID];
-            	
-            	mtime[ttemp[0]]+=ttemp[1];
-            	lmt[(int) jid.jobID]=mtime[ttemp[0]];
-            	tcnt[(int) jid.jobID]++;
-            	jid.completionTime=Math.max(jid.completionTime,mtime[ttemp[0]]);
-
-                for(int i=0;i<mcnt;i++)
-                	System.out.print(mtime[i]+" ");
-                System.out.println();
-            }
-//            jobs.forEach(i->System.out.println(i));
-            // Solution temp=new Solution(jobs.size(),5);
-            // for(int i=0;i<jobs.size();i++)
-            // {
-            // 	temp.setVariable(i,jobs.get(i).copy());
-            // 	jobs.get(i).completionTime=0.0;
-            // }
-            return jobs;
-    	}
-    },
-    DDate(4)
-    {
-    	public List<JobT> evaluate(List<JobT> jobs,int jcnt,int mcnt)
-    	{
-//            int tcnt[]=new int[jcnt];
-            double mtime[]=new double[mcnt];
-            Collections.sort(jobs,new Comparator<JobT>(){
-
-				@Override
-				public int compare(JobT o1, JobT o2) {
-					if(o1.dueDate>o2.dueDate)
-						return 1;
-					else if(o1.dueDate<o2.dueDate)
-						return -1;
-					return 0;
-				}
-            	
-            	
-            });
-            for(JobT i:jobs)
-            {
-            	double prev=0;
-            	for(int k=0;k<i.getTaskCount();k++)
-            	{
-            		// if(mtime[i.task[k][0]]<prev)
-            		// 	mtime[i.task[k][0]]=prev;
-	            	// mtime[i.task[k][0]]+=i.task[k][1];
-            		// prev=mtime[i.task[k][0]];
-	            	// i.completionTime=Math.max(i.completionTime,mtime[i.task[k][0]]);
-            	}
-            	for(int k=0;k<mcnt;k++)
-            		System.out.print(mtime[k]+" ");
-            	System.out.println();
-            }
-            Solution temp=new Solution(jobs.size(),5);
-
-            return jobs;
-    	}
-    };
-    public int abv;
-    ScheduleHeuristic(int abv)
-    {
-           this.abv = abv;
-    }
-    public List<JobT> evaluate(List<JobT> jobs,int m,int n)
-	{
-    	return null;
+				return 1;
+			}			
+		});
+		//get the first operation of the first job from the jobList 
+		Operation o = jobList.get(0).getFirstOperation();
+		//remove this operation
+		jobList.get(0).getAllOperation().remove(0);
+		Long jid = jobList.get(0).jobID;
+		//if there is no more operation left in the job then remove from the list
+		if(jobList.get(0).getProcessingTime()==0){
+			jobList.remove(0);
+		}
+		//create a new job for the operation
+		return new JobT(jid, o.getMachineID(), o.getProcessingTime());
 	}
 }

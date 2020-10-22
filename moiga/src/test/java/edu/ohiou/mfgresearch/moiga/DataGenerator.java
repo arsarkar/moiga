@@ -209,7 +209,7 @@ public class DataGenerator {
 	// 	return new JobShopProblem(jcnt,jobs,measures);
 	// }
 
-	public static JobShopProblem readTaillardToJobShopWithDD(String path, List<PerformanceMeasures> measures, double t,	double r) throws Exception {
+	public static List<JobT> readTaillardToJobShopWithDD(String path) throws Exception {
 		Scanner sc = new Scanner(new File(path));
 		sc.nextLine();
 		String ss[] = sc.nextLine().trim().split(",");
@@ -241,7 +241,7 @@ public class DataGenerator {
 				// continue;
 				int mix = Integer.parseInt(machix[k]); // machine ID
 				// System.out.println(ind+" "+i+" "+j);
-				job.addOperation(Long.valueOf(k + 1), Long.valueOf(mix), pt[i][k]);
+				job.addOperation(Long.valueOf(mix), pt[i][k]);
 			}
 			int DD = Integer.parseInt(machix[machix.length - 1]);
 			job.setDueDate(DD);
@@ -249,7 +249,7 @@ public class DataGenerator {
 		}
 		jobs.forEach(j -> System.out.println(j.toString()));
 		sc.close();
-		return new JobShopProblem(jobs, measures);
+		return jobs;
 	}
 
 	public Problem createProb(List<PerformanceMeasures> measures) throws Exception {

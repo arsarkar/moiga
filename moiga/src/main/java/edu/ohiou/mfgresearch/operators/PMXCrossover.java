@@ -10,6 +10,9 @@ import org.moeaframework.core.Variation;
 
 import edu.ohiou.mfgresearch.schedule.Job;
 
+/**
+ * Crossover for single machine scheduling
+ */
 public class PMXCrossover implements Variation
 {
 

@@ -1,45 +1,67 @@
 package edu.ohiou.mfgresearch.operators;
 
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
 
-import edu.ohiou.mfgresearch.schedule.Job;
+import edu.ohiou.mfgresearch.schedule.JobShopProblem;
+import edu.ohiou.mfgresearch.schedule.JobT;
 
-public class SwapMutation implements Variation
-{
-	private final double probability;
+public class SwapMutation implements Variation {
+	JobShopProblem problem;
 
-	public SwapMutation(double probability) {
-		this.probability = probability;
+	public SwapMutation(JobShopProblem prob) {
+		this.problem = prob;
 	}
 
 	@Override
 	public Solution[] evolve(Solution[] parents) {
-		Solution result = parents[0].copy();
-		int ind1=2;
-		try{ind1 = PRNG.nextInt(result.getNumberOfVariables());}
-		catch(NotStrictlyPositiveException e)
-		{
-			System.out.println(result.getVariable(0));
-		}
-		int ind2 = PRNG.nextInt(result.getNumberOfVariables() - 1);
-		if (ind1 == ind2)
-		{
-			ind2 = (ind2+1) % result.getNumberOfVariables() ;
-		}
-		Job t=(Job) result.getVariable(ind1);
-		result.setVariable(ind1, result.getVariable(ind2));
-		result.setVariable(ind2, t);
-		return new Solution[] { result };
-	}
 
+		List<JobT> p1List = IntStream.range(0, parents[0].getNumberOfVariables())
+									.mapToObj(i->(JobT) parents[0].getVariable(i))
+									.collect(Collectors.toList());
+		//get the jobIDs		
+		List<Long> jids = p1List.stream().map(j->j.jobID).collect(Collectors.toList());
+
+		//randomly select first position
+		int pos1 = PRNG.nextInt(0, p1List.size()-1);
+		Long jid1 = p1List.get(pos1).jobID;
+		//randomly select another position which is not same as first position
+		int pos2 = pos1;
+		while(pos1==pos2){
+			pos2 = PRNG.nextInt(0, p1List.size()-1);
+		}
+		Long jid2 = p1List.get(pos2).jobID;	
+		//switch place
+		List<Long> jidSwapped = new ArrayList<Long>();
+		for(int i = 0; i < jids.size(); i++){
+			if(i==pos1){
+				jidSwapped.add(jid2);
+			}
+			else if(i==pos2){
+				jidSwapped.add(jid1);
+			} 
+			else{
+				jidSwapped.add(jids.get(i));
+			}
+		}
+		//reassign the operations
+		List<JobT> p2Clone = problem.assignOperations(jidSwapped); 
+
+		Solution offspring = new Solution(parents[0].getNumberOfVariables(), parents[0].getNumberOfObjectives());
+		for (int i = 0; i < offspring.getNumberOfVariables(); i++) {
+			offspring.setVariable(i, p2Clone.get(i));
+		}
+		return new Solution[]{offspring};
+	}
 
 	@Override
 	public int getArity() {
 		return 1;
 	}
-
 }
-
